@@ -3,7 +3,7 @@
   const defaults = {
     refreshIntervalMs: 15000,
     odptConsumerKey: "qkpjriztbhvaxwjzum1oluug1hnfvwfq3ztxnsb56xtbt6qve7zdwv8bb73ajavy",
-    keikyuProxyTemplate: isLocal ? "/proxy?url={url}" : "",
+    keikyuProxyTemplate: isLocal ? "/proxy?url={url}" : "https://e2255601.kq-tid.pages.dev/?url={url}",
   };
 
   window.APP_CONFIG = Object.assign({}, defaults, window.APP_CONFIG || {});
