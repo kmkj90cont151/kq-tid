@@ -697,7 +697,7 @@ function compareDirectionLabel(left, right) {
 
 function compareDirectionLabelForNetwork(network, left, right) {
   if (network && network.id === "keisei") {
-    const keiseiOrder = ["下り", "上り"];
+    const keiseiOrder = ["上り", "下り"];
     const leftIndex = keiseiOrder.indexOf(left);
     const rightIndex = keiseiOrder.indexOf(right);
     if (leftIndex >= 0 || rightIndex >= 0) {
