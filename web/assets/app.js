@@ -402,7 +402,7 @@ function renderLinePanel(network, lineLabel, trains) {
   const directions = groupBy(trains, (train) => `${train.directionCode}__${train.directionLabel}`);
   const directionPanels = Array.from(directions.values())
     .sort((left, right) => compareDirectionLabelForNetwork(network, left.items[0].directionLabel, right.items[0].directionLabel))
-    .map((group) => renderDirectionPanel(group.items[0].directionLabel, group.items));
+    .map((group) => renderDirectionPanel(network, group.items[0].directionLabel, group.items));
 
   return `
     <section class="line-panel" style="--accent:${escapeHtml(network.accentColor || "#333333")}">
@@ -418,10 +418,10 @@ function renderLinePanel(network, lineLabel, trains) {
   `;
 }
 
-function renderDirectionPanel(directionLabel, trains) {
+function renderDirectionPanel(network, directionLabel, trains) {
   const positionGroups = groupBy(trains, (train) => `${train.positionCode}__${train.locationLabel}`);
   const positions = Array.from(positionGroups.values())
-    .sort((left, right) => Number(left.items[0].positionOrder || 0) - Number(right.items[0].positionOrder || 0))
+    .sort((left, right) => comparePositionGroupForNetwork(network, directionLabel, left.items[0], right.items[0]))
     .map((group) => renderPositionGroup(group.items[0], group.items));
 
   return `
@@ -705,6 +705,15 @@ function compareDirectionLabelForNetwork(network, left, right) {
     }
   }
   return compareDirectionLabel(left, right);
+}
+
+function comparePositionGroupForNetwork(network, directionLabel, left, right) {
+  const leftOrder = Number(left.positionOrder || 0);
+  const rightOrder = Number(right.positionOrder || 0);
+  if (network && network.id === "keisei" && directionLabel === "上り") {
+    return rightOrder - leftOrder;
+  }
+  return leftOrder - rightOrder;
 }
 
 function statusCard(label, value, hint, isWide = false) {
