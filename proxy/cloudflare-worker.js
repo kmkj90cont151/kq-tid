@@ -12,19 +12,22 @@ export default {
       return json(
         {
           ok: true,
-          message: "keikyu proxy is running",
-          usage: `${url.origin}/?url=${encodeURIComponent("https://app-kq.net/api/train")}`,
+          message: "train api proxy is running",
+          usage: [
+            `${url.origin}/?url=${encodeURIComponent("https://app-kq.net/api/train")}`,
+            `${url.origin}/?url=${encodeURIComponent("https://zaisen.tid-keisei.jp/data/traffic_info.json")}`,
+          ],
         },
         200,
       );
     }
-    if (!target.startsWith("https://app-kq.net/api/")) {
+    if (!isAllowedTarget(target)) {
       return json({ error: "forbidden" }, 403);
     }
 
     const upstream = await fetch(target, {
       headers: {
-        "user-agent": "keikyu-mytid-worker/1.0",
+        "user-agent": "keikyu-mytid-worker/2.0",
       },
     });
 
@@ -39,6 +42,16 @@ export default {
     });
   },
 };
+
+const ALLOWED_PREFIXES = [
+  "https://app-kq.net/api/",
+  "https://zaisen.tid-keisei.jp/data/",
+  "https://zaisen.tid-keisei.jp/config/",
+];
+
+function isAllowedTarget(target) {
+  return ALLOWED_PREFIXES.some((prefix) => target.startsWith(prefix));
+}
 
 function corsHeaders() {
   return {

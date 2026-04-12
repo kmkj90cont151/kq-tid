@@ -1,5 +1,5 @@
 (function initLiveTrainData() {
-  const LIVE_APP_VERSION = "github-pages-live-2";
+  const LIVE_APP_VERSION = "github-pages-live-3";
   const LIVE_CONFIG = window.APP_CONFIG || {};
   const NETWORK_IDS = ["keikyu", "toei", "keisei", "matsudo"];
 
@@ -30,7 +30,7 @@
     keikyu: {
       id: "keikyu",
       label: "京急線",
-      description: "旧GAS版の区間表示を土台に、在線APIと列車別時刻表を重ねて表示します。GitHub Pages 上では京急APIに別途プロキシ設定が必要です。",
+      description: "旧GAS版の区間表示を土台に、在線APIと列車別時刻表を重ねて表示します。GitHub Pages 上では外部API用のプロキシ設定が必要です。",
       accentColor: "#d72731",
       sourceUrls: [
         { label: "在線API", url: KEIKYU_API_ENDPOINT },
@@ -52,7 +52,7 @@
     keisei: {
       id: "keisei",
       label: "京成線",
-      description: "traffic_info.json を主に、列車別時刻表 diainf を必要時のみ後読みして表示します。",
+      description: "traffic_info.json を主に、列車別時刻表 diainf を必要時のみ後読みして表示します。GitHub Pages 上ではプロキシ経由で取得します。",
       accentColor: "#0b5bd3",
       sourceUrls: [
         { label: "在線API", url: KEISEI_ENDPOINTS.traffic },
@@ -63,7 +63,7 @@
     matsudo: {
       id: "matsudo",
       label: "松戸線",
-      description: "matsudo_train_info.json と matsudo_id.json を組み合わせて位置と運用番号を表示します。",
+      description: "matsudo_train_info.json と matsudo_id.json を組み合わせて位置と運用番号を表示します。GitHub Pages 上ではプロキシ経由で取得します。",
       accentColor: "#13866f",
       sourceUrls: [
         { label: "在線API", url: KEISEI_ENDPOINTS.matsudoTrainInfo },
@@ -144,21 +144,31 @@
     ],
   };
 
-  const KEIKYU_SPECIAL_POSITION_META = {
-    B033: { lineId: "main", kind: "section", anchor: 33, confidence: "medium" },
-    B049: { lineId: "main", kind: "section", anchor: 49, confidence: "medium" },
-    E1011: { lineId: "main", kind: "station", stationNumber: 11, confidence: "medium" },
-    E4011: { lineId: "main", kind: "station", stationNumber: 11, confidence: "medium" },
-    E8050: { lineId: "main", kind: "section", anchor: 50, confidence: "medium" },
-    N050: { lineId: "main", kind: "section", anchor: 50, confidence: "medium" },
-    S011: { lineId: "airport", kind: "section", anchor: 11, confidence: "medium" },
-    S020: { lineId: "daishi", kind: "section", anchor: 20, confidence: "medium" },
-    SD020: { lineId: "daishi", kind: "station", stationNumber: 20, confidence: "medium" },
-    SU020: { lineId: "daishi", kind: "station", stationNumber: 20, confidence: "medium" },
-    S050: { lineId: "zushi", kind: "section", anchor: 50, confidence: "medium" },
-    S061: { lineId: "main", kind: "section", anchor: 61, confidence: "medium" },
-    U061: { lineId: "kurihama", kind: "section", anchor: 61, confidence: "medium" },
-    EU065: { lineId: "kurihama", kind: "station", stationNumber: 61, label: "堀ノ内", confidence: "low" },
+  const KEIKYU_EXACT_POSITION_META = {
+    B033: { lineId: "main", sequenceId: "main", locationType: "section", stationNumber: 33, neighborStationNumber: 34, neighborSide: "next", confidence: "high" },
+    B049: { lineId: "main", sequenceId: "main", locationType: "section", stationNumber: 49, neighborStationNumber: 50, neighborSide: "next", confidence: "high" },
+    D020: { lineId: "main", sequenceId: "main", locationType: "section", stationNumber: 20, neighborStationNumber: 19, neighborSide: "previous", confidence: "high" },
+    D050: { lineId: "main", sequenceId: "main", locationType: "section", stationNumber: 50, neighborStationNumber: 49, neighborSide: "previous", confidence: "high" },
+    D061: { lineId: "main", sequenceId: "main", locationType: "section", stationNumber: 61, neighborStationNumber: 60, neighborSide: "previous", confidence: "high" },
+    E1011: { lineId: "main", sequenceId: "main", locationType: "station", stationNumber: 11, confidence: "high" },
+    E4011: { lineId: "main", sequenceId: "main", locationType: "station", stationNumber: 11, confidence: "high" },
+    E8050: { lineId: "main", sequenceId: "main", locationType: "section", stationNumber: 50, neighborStationNumber: 54, neighborSide: "next", confidence: "high" },
+    ED011: { lineId: "main", sequenceId: "main", locationType: "station", stationNumber: 11, confidence: "high" },
+    ED020: { lineId: "main", sequenceId: "main", locationType: "station", stationNumber: 20, confidence: "high" },
+    ED050: { lineId: "main", sequenceId: "main", locationType: "station", stationNumber: 50, confidence: "high" },
+    ED061: { lineId: "main", sequenceId: "main", locationType: "station", stationNumber: 61, confidence: "high" },
+    EU065: { lineId: "kurihama", sequenceId: "kurihama", locationType: "station", stationNumber: 61, label: "堀ノ内", confidence: "high" },
+    N050: { lineId: "main", sequenceId: "main", locationType: "section", stationNumber: 50, neighborStationNumber: 49, neighborSide: "previous", confidence: "high" },
+    S011: { lineId: "airport", sequenceId: "airport", locationType: "section", stationNumber: 11, neighborStationNumber: 12, neighborSide: "next", confidence: "high" },
+    S020: { lineId: "daishi", sequenceId: "daishi", locationType: "section", stationNumber: 20, neighborStationNumber: 21, neighborSide: "next", confidence: "high" },
+    S050: { lineId: "zushi", sequenceId: "zushi", locationType: "section", stationNumber: 50, neighborStationNumber: 51, neighborSide: "next", confidence: "high" },
+    S061: { lineId: "main", sequenceId: "main", locationType: "section", stationNumber: 61, neighborStationNumber: 62, neighborSide: "next", confidence: "high" },
+    SD020: { lineId: "daishi", sequenceId: "daishi", locationType: "station", stationNumber: 20, confidence: "high" },
+    SU020: { lineId: "daishi", sequenceId: "daishi", locationType: "station", stationNumber: 20, confidence: "high" },
+    U011: { lineId: "main", sequenceId: "main", locationType: "section", stationNumber: 11, neighborStationNumber: 18, neighborSide: "next", confidence: "high" },
+    U020: { lineId: "main", sequenceId: "main", locationType: "section", stationNumber: 20, neighborStationNumber: 27, neighborSide: "next", confidence: "high" },
+    U050: { lineId: "main", sequenceId: "main", locationType: "section", stationNumber: 50, neighborStationNumber: 54, neighborSide: "next", confidence: "high" },
+    U061: { lineId: "kurihama", sequenceId: "kurihama", locationType: "section", stationNumber: 61, neighborStationNumber: 65, neighborSide: "next", confidence: "high" },
   };
 
   const KEIKYU_TRAIN_KIND_META = {
@@ -313,12 +323,14 @@
   }
 
   function resolveRequestUrl(url, options = {}) {
-    if (!options.keikyuProxy) {
+    const useProxy = Boolean(options.proxy || options.keikyuProxy);
+    if (!useProxy) {
       return url;
     }
-    const template = stringOrEmpty(LIVE_CONFIG.keikyuProxyTemplate);
+    const template = stringOrEmpty(LIVE_CONFIG.apiProxyTemplate || LIVE_CONFIG.keikyuProxyTemplate);
     if (!template) {
-      throw new Error("京急APIは GitHub Pages から直接取得できません。`web/assets/config.js` の `keikyuProxyTemplate` にプロキシURLを設定してください。");
+      const label = stringOrEmpty(options.proxyLabel) || "対象API";
+      throw new Error(`${label} は GitHub Pages から直接取得できません。web/assets/config.js に apiProxyTemplate を設定してください。`);
     }
     return template.includes("{url}") ? template.replace("{url}", encodeURIComponent(url)) : `${template}${encodeURIComponent(url)}`;
   }
@@ -485,9 +497,6 @@
   }
 
   function inferKeikyuLineId(stationNumber, positionCode) {
-    if (positionCode === "U061") {
-      return "kurihama";
-    }
     if (stationNumber >= 12 && stationNumber <= 17) {
       return "airport";
     }
@@ -511,8 +520,19 @@
     return (sequence || []).findIndex((entry) => entry[0] === stationNumber);
   }
 
-  function finalizeKeikyuPosition(lineId, locationType, stationNumber, positionCode, forcedLabel, confidence) {
-    const sequence = KEIKYU_STATION_SEQUENCES[lineId] || KEIKYU_STATION_SEQUENCES.main;
+  function buildKeikyuSectionLabel(stationEntry, neighborEntry) {
+    if (!stationEntry) {
+      return "";
+    }
+    if (!neighborEntry) {
+      return stationEntry[1];
+    }
+    return `${neighborEntry[1]} - ${stationEntry[1]} 間`;
+  }
+
+  function finalizeKeikyuPosition(lineId, locationType, stationNumber, positionCode, forcedLabel, confidence, options = {}) {
+    const sequenceId = stringOrEmpty(options.sequenceId) || lineId;
+    const sequence = KEIKYU_STATION_SEQUENCES[sequenceId] || KEIKYU_STATION_SEQUENCES.main;
     const stationEntry = findStationEntry(sequence, stationNumber);
     const stationLabel = forcedLabel || (stationEntry ? stationEntry[1] : positionCode);
     let locationLabel = stationLabel;
@@ -522,9 +542,12 @@
       const index = findStationIndex(sequence, stationNumber);
       positionOrder = index * 10;
       if (locationType === "section") {
-        const nextEntry = sequence[index + 1] || sequence[index - 1] || stationEntry;
-        locationLabel = `${stationEntry[1]} - ${nextEntry[1]} 間`;
-        positionOrder = index * 10 + 5;
+        const neighborEntry = options.neighborStationNumber
+          ? findStationEntry(sequence, options.neighborStationNumber)
+          : ((options.neighborSide === "previous" ? sequence[index - 1] : sequence[index + 1]) || sequence[index + 1] || sequence[index - 1] || stationEntry);
+        const neighborSide = options.neighborSide === "previous" ? "previous" : "next";
+        locationLabel = buildKeikyuSectionLabel(stationEntry, neighborEntry);
+        positionOrder = index * 10 + (neighborSide === "previous" ? -5 : 5);
       }
     }
 
@@ -540,29 +563,42 @@
   }
 
   function resolveKeikyuPosition(positionCode) {
-    const special = KEIKYU_SPECIAL_POSITION_META[positionCode];
-    if (special) {
+    const exact = KEIKYU_EXACT_POSITION_META[positionCode];
+    if (exact) {
       return finalizeKeikyuPosition(
-        special.lineId,
-        special.kind === "station" ? "station" : "section",
-        special.stationNumber || special.anchor,
+        exact.lineId,
+        exact.locationType,
+        exact.stationNumber,
         positionCode,
-        special.label || "",
-        special.confidence || "medium"
+        exact.label || "",
+        exact.confidence || "high",
+        exact
       );
     }
 
-    let match = /^EU(\d{3})$/.exec(positionCode);
+    let match = /^(EU|ED)(\d{3})$/.exec(positionCode);
     if (match) {
-      return finalizeKeikyuPosition(inferKeikyuLineId(Number(match[1]), positionCode), "station", Number(match[1]), positionCode, "", "high");
+      return finalizeKeikyuPosition(inferKeikyuLineId(Number(match[2]), positionCode), "station", Number(match[2]), positionCode, "", "high");
     }
     match = /^U(\d{3})$/.exec(positionCode);
     if (match) {
-      return finalizeKeikyuPosition(inferKeikyuLineId(Number(match[1]), positionCode), "section", Number(match[1]), positionCode, "", "high");
+      return finalizeKeikyuPosition(inferKeikyuLineId(Number(match[1]), positionCode), "section", Number(match[1]), positionCode, "", "high", { neighborSide: "next" });
+    }
+    match = /^D(\d{3})$/.exec(positionCode);
+    if (match) {
+      return finalizeKeikyuPosition(inferKeikyuLineId(Number(match[1]), positionCode), "section", Number(match[1]), positionCode, "", "high", { neighborSide: "previous" });
     }
     match = /^S(\d{3})$/.exec(positionCode);
     if (match) {
-      return finalizeKeikyuPosition(inferKeikyuLineId(Number(match[1]), positionCode), "section", Number(match[1]), positionCode, "", "medium");
+      return finalizeKeikyuPosition(inferKeikyuLineId(Number(match[1]), positionCode), "section", Number(match[1]), positionCode, "", "high", { neighborSide: "next" });
+    }
+    match = /^N(\d{3})$/.exec(positionCode);
+    if (match) {
+      return finalizeKeikyuPosition(inferKeikyuLineId(Number(match[1]), positionCode), "section", Number(match[1]), positionCode, "", "high", { neighborSide: "previous" });
+    }
+    match = /^(SU|SD)(\d{3})$/.exec(positionCode);
+    if (match) {
+      return finalizeKeikyuPosition(inferKeikyuLineId(Number(match[2]), positionCode), "station", Number(match[2]), positionCode, "", "high");
     }
     match = /(\d{3})$/.exec(positionCode);
     if (match) {
@@ -572,7 +608,8 @@
         Number(match[1]),
         positionCode,
         "",
-        "low"
+        "low",
+        { neighborSide: "next" }
       );
     }
 
@@ -1005,7 +1042,11 @@
         matsudoId: KEISEI_ENDPOINTS.matsudoId,
         ikMatsudo: KEISEI_ENDPOINTS.ikMatsudo,
       })) {
-        loaded[key] = await fetchJson(url, { encodings: ["utf-8", "cp932", "shift_jis"] });
+        loaded[key] = await fetchJson(url, {
+          encodings: ["utf-8", "cp932", "shift_jis"],
+          proxy: true,
+          proxyLabel: "京成設定API",
+        });
       }
 
       const syasyu = ensureArray((loaded.syasyu || {}).syasyu);
@@ -1312,6 +1353,8 @@
     return getCachedObject(`keisei:diainf:${trainNumber}:${getOperationalDateCompact()}`, 60, async () => {
       const payload = await fetchJson(`${KEISEI_ENDPOINTS.diainfBase}${trainNumber}.json?ts=${getOperationalDateCompact()}`, {
         encodings: ["utf-8", "cp932", "shift_jis"],
+        proxy: true,
+        proxyLabel: "京成列車別時刻表API",
       });
       return normalizeKeiseiDiaRows(payload, config);
     });
@@ -1375,7 +1418,11 @@
   async function buildKeiseiSnapshot() {
     return getCachedObject("network:keisei", 10, async () => {
       const [trafficInfo, config] = await Promise.all([
-        fetchJson(KEISEI_ENDPOINTS.traffic, { encodings: ["utf-8", "cp932", "shift_jis"] }),
+        fetchJson(KEISEI_ENDPOINTS.traffic, {
+          encodings: ["utf-8", "cp932", "shift_jis"],
+          proxy: true,
+          proxyLabel: "京成在線API",
+        }),
         getKeiseiConfigBundle(),
       ]);
       const records = flattenKeiseiTraffic(trafficInfo);
@@ -1506,9 +1553,21 @@
     return getCachedObject("network:matsudo", 10, async () => {
       const [config, trainPayload, datePayload, statusPayload] = await Promise.all([
         getKeiseiConfigBundle(),
-        fetchJson(KEISEI_ENDPOINTS.matsudoTrainInfo, { encodings: ["utf-8", "cp932", "shift_jis"] }),
-        fetchJson(KEISEI_ENDPOINTS.matsudoDate, { encodings: ["utf-8", "cp932", "shift_jis"] }),
-        fetchJson(KEISEI_ENDPOINTS.matsudoStatus, { encodings: ["utf-8", "cp932", "shift_jis"] }),
+        fetchJson(KEISEI_ENDPOINTS.matsudoTrainInfo, {
+          encodings: ["utf-8", "cp932", "shift_jis"],
+          proxy: true,
+          proxyLabel: "京成松戸線API",
+        }),
+        fetchJson(KEISEI_ENDPOINTS.matsudoDate, {
+          encodings: ["utf-8", "cp932", "shift_jis"],
+          proxy: true,
+          proxyLabel: "京成松戸線日付API",
+        }),
+        fetchJson(KEISEI_ENDPOINTS.matsudoStatus, {
+          encodings: ["utf-8", "cp932", "shift_jis"],
+          proxy: true,
+          proxyLabel: "京成松戸線状態API",
+        }),
       ]);
 
       const warnings = [];
@@ -1549,7 +1608,7 @@
       summary: buildManifestSummary(NETWORK_IDS.length),
       notes: [
         "タブを開いた路線だけを取得し、列車別時刻表は列車カードを開いたときだけ後読みします。",
-        "京急APIは GitHub Pages 本番から直接呼べないため、別途プロキシ設定が必要です。",
+        "京急・京成系APIは GitHub Pages 本番から直接読めないため、apiProxyTemplate の設定と Worker の再デプロイが必要です。",
         "えるサイト連携は停止し、リンクのみを残しています。",
       ],
     };

@@ -11,7 +11,11 @@ from urllib.request import Request, urlopen
 
 from build_site import ROOT, build_site
 
-ALLOWED_PROXY_PREFIXES = ("https://app-kq.net/api/",)
+ALLOWED_PROXY_PREFIXES = (
+    "https://app-kq.net/api/",
+    "https://zaisen.tid-keisei.jp/data/",
+    "https://zaisen.tid-keisei.jp/config/",
+)
 
 
 class LocalSiteHandler(SimpleHTTPRequestHandler):
