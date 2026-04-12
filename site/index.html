@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>在線位置研究ビューア</title>
+    <link rel="stylesheet" href="./assets/styles.css">
+  </head>
+  <body>
+    <div class="page-glow"></div>
+    <div class="app-shell">
+      <header class="hero">
+        <div class="hero__eyebrow">GitHub Pages / Python Build</div>
+        <div class="hero__main">
+          <div>
+            <h1>在線位置研究ビューア</h1>
+            <p class="hero__lead">
+              Python で在線データと列車別時刻表を取得し、GitHub Pages に配布するための静的サイトです。
+              まずは京急を正式対応対象にしており、列車カードを開いたときだけ時刻表 JSON を後読みします。
+            </p>
+          </div>
+          <button id="refreshButton" class="primary-button" type="button">再取得</button>
+        </div>
+        <div class="hero__meta">
+          <span id="buildTimestamp">ビルド時刻: -</span>
+          <span id="buildVersion">バージョン -</span>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="panel">
+          <div class="controls__row">
+            <label class="field">
+              <span class="field__label">検索</span>
+              <input id="searchInput" class="text-input" type="search" placeholder="例: 1403A / 京急久里浜 / 快特 / 金沢文庫">
+            </label>
+            <label class="toggle">
+              <input id="flaggedOnlyToggle" type="checkbox">
+              <span>要確認のみ</span>
+            </label>
+            <label class="toggle">
+              <input id="showRawToggle" type="checkbox" checked>
+              <span>raw コード表示</span>
+            </label>
+          </div>
+          <div id="tabBar" class="tab-bar"></div>
+        </section>
+
+        <section id="statusBar" class="status-grid"></section>
+        <section id="networkMeta" class="panel info-panel"></section>
+        <section id="listings" class="network-panels"></section>
+      </main>
+
+      <footer class="footer">
+        GitHub Pages は Python を実行時に動かせないため、このリポジトリでは Python をビルド時だけ使い、
+        生成した JSON と HTML/CSS/JavaScript を静的配信します。
+      </footer>
+    </div>
+
+    <script src="./assets/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,81 @@
+{
+  "detailKey": "keikyu:1658H:1",
+  "detailRows": [
+    {
+      "stationCode": "2051",
+      "stationLabel": "京急久里浜",
+      "arrivalTime": "",
+      "departureTime": "16:13",
+      "stopType": "１番線",
+      "platform": "１",
+      "formation": "",
+      "numberOfCars": "8両",
+      "toNextStation": "3分"
+    },
+    {
+      "stationCode": "3290",
+      "stationLabel": "ＹＲＰ野比",
+      "arrivalTime": "16:16",
+      "departureTime": "16:17",
+      "stopType": "",
+      "platform": "",
+      "formation": "",
+      "numberOfCars": "8両",
+      "toNextStation": "1分"
+    },
+    {
+      "stationCode": "2056",
+      "stationLabel": "京急長沢",
+      "arrivalTime": "16:18",
+      "departureTime": "16:19",
+      "stopType": "",
+      "platform": "",
+      "formation": "",
+      "numberOfCars": "8両",
+      "toNextStation": "1分"
+    },
+    {
+      "stationCode": "2556",
+      "stationLabel": "津久井浜",
+      "arrivalTime": "16:20",
+      "departureTime": "16:20",
+      "stopType": "",
+      "platform": "",
+      "formation": "",
+      "numberOfCars": "8両",
+      "toNextStation": "2分"
+    },
+    {
+      "stationCode": "3057",
+      "stationLabel": "三浦海岸",
+      "arrivalTime": "16:22",
+      "departureTime": "16:22",
+      "stopType": "",
+      "platform": "",
+      "formation": "",
+      "numberOfCars": "8両",
+      "toNextStation": "3分"
+    },
+    {
+      "stationCode": "3061",
+      "stationLabel": "三崎口",
+      "arrivalTime": "16:25",
+      "departureTime": "",
+      "stopType": "２番線",
+      "platform": "２",
+      "formation": "",
+      "numberOfCars": "",
+      "toNextStation": ""
+    }
+  ],
+  "detailSummary": "京急列車別時刻表",
+  "originLabel": "京急久里浜",
+  "destinationLabel": "三崎口",
+  "platform": "１",
+  "vehicleLabel": "8両",
+  "sourceTags": [
+    "timetable"
+  ],
+  "encoding": "shift_jis",
+  "sourceUrl": "https://app-kq.net/api/locationTimetable/8301-0-1658H"
+}

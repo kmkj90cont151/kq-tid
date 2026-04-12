@@ -1,0 +1,38 @@
+{
+  "appName": "在線位置研究ビューア",
+  "appVersion": "github-pages-1",
+  "buildTimestamp": "2026-04-12T07:20:41.290631+00:00",
+  "publishTarget": "github-pages",
+  "refreshPolicy": "GitHub Actions で約10分ごとに再生成",
+  "networks": [
+    {
+      "id": "keikyu",
+      "label": "京急線",
+      "description": "京急の在線位置と列車別時刻表をまとめて確認できる GitHub Pages 向けの静的サイトです。",
+      "accentColor": "#d72731",
+      "updatedAt": "2026-04-12 16:20:16",
+      "trainCount": 61,
+      "detailCount": 60,
+      "dataUrl": "data/networks/keikyu.json",
+      "sourceUrls": [
+        {
+          "label": "京急在線 API",
+          "url": "https://app-kq.net/api/train"
+        },
+        {
+          "label": "京急公式在線",
+          "url": "https://app-kq.net/web/jp/html/zaisen.html"
+        },
+        {
+          "label": "京急列車別時刻表 API 例",
+          "url": "https://app-kq.net/api/locationTimetable/8201-1-1403A"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "GitHub Pages 版は Python のビルド結果を静的配信します。",
+    "ブラウザでは列車カードを開いたときだけ詳細 JSON を読み込みます。",
+    "現在の GitHub Pages 版は京急を正式対応対象にしています。"
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "detailKey": "keikyu:1683X:2",
+  "detailRows": [
+    {
+      "stationCode": "2119",
+      "stationLabel": "小島新田",
+      "arrivalTime": "",
+      "departureTime": "16:18",
+      "stopType": "１番線",
+      "platform": "１",
+      "formation": "",
+      "numberOfCars": "4両",
+      "toNextStation": "1分"
+    },
+    {
+      "stationCode": "2215",
+      "stationLabel": "大師橋",
+      "arrivalTime": "16:19",
+      "departureTime": "16:20",
+      "stopType": "",
+      "platform": "",
+      "formation": "",
+      "numberOfCars": "4両",
+      "toNextStation": "1分"
+    },
+    {
+      "stationCode": "2895",
+      "stationLabel": "東門前",
+      "arrivalTime": "16:21",
+      "departureTime": "16:21",
+      "stopType": "",
+      "platform": "",
+      "formation": "",
+      "numberOfCars": "4両",
+      "toNextStation": "1分"
+    },
+    {
+      "stationCode": "1913",
+      "stationLabel": "川崎大師",
+      "arrivalTime": "16:22",
+      "departureTime": "16:23",
+      "stopType": "",
+      "platform": "",
+      "formation": "",
+      "numberOfCars": "4両",
+      "toNextStation": "1分"
+    },
+    {
+      "stationCode": "2394",
+      "stationLabel": "鈴木町",
+      "arrivalTime": "16:24",
+      "departureTime": "16:24",
+      "stopType": "",
+      "platform": "",
+      "formation": "",
+      "numberOfCars": "4両",
+      "toNextStation": "1分"
+    },
+    {
+      "stationCode": "3089",
+      "stationLabel": "港町",
+      "arrivalTime": "16:25",
+      "departureTime": "16:26",
+      "stopType": "",
+      "platform": "",
+      "formation": "",
+      "numberOfCars": "4両",
+      "toNextStation": "2分"
+    },
+    {
+      "stationCode": "2050",
+      "stationLabel": "京急川崎",
+      "arrivalTime": "16:28",
+      "departureTime": "",
+      "stopType": "３番線",
+      "platform": "３",
+      "formation": "",
+      "numberOfCars": "",
+      "toNextStation": ""
+    }
+  ],
+  "detailSummary": "京急列車別時刻表",
+  "originLabel": "小島新田",
+  "destinationLabel": "京急川崎",
+  "platform": "１",
+  "vehicleLabel": "4両",
+  "sourceTags": [
+    "timetable"
+  ],
+  "encoding": "shift_jis",
+  "sourceUrl": "https://app-kq.net/api/locationTimetable/8501-1-1683X"
+}

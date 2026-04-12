@@ -1,0 +1,70 @@
+{
+  "detailKey": "keikyu:1663X:2",
+  "detailRows": [
+    {
+      "stationCode": "2338",
+      "stationLabel": "逗子・葉山",
+      "arrivalTime": "",
+      "departureTime": "16:15",
+      "stopType": "",
+      "platform": "",
+      "formation": "",
+      "numberOfCars": "4両",
+      "toNextStation": "1分"
+    },
+    {
+      "stationCode": "2384",
+      "stationLabel": "神武寺",
+      "arrivalTime": "16:16",
+      "departureTime": "16:17",
+      "stopType": "",
+      "platform": "",
+      "formation": "",
+      "numberOfCars": "4両",
+      "toNextStation": "3分"
+    },
+    {
+      "stationCode": "3165",
+      "stationLabel": "六浦",
+      "arrivalTime": "16:20",
+      "departureTime": "16:20",
+      "stopType": "",
+      "platform": "",
+      "formation": "",
+      "numberOfCars": "4両",
+      "toNextStation": "1分"
+    },
+    {
+      "stationCode": "1854",
+      "stationLabel": "金沢八景",
+      "arrivalTime": "16:21",
+      "departureTime": "16:25",
+      "stopType": "４番線",
+      "platform": "４",
+      "formation": "",
+      "numberOfCars": "4両",
+      "toNextStation": "2分"
+    },
+    {
+      "stationCode": "1855",
+      "stationLabel": "金沢文庫",
+      "arrivalTime": "16:27",
+      "departureTime": "",
+      "stopType": "３番線",
+      "platform": "３",
+      "formation": "",
+      "numberOfCars": "",
+      "toNextStation": ""
+    }
+  ],
+  "detailSummary": "京急列車別時刻表",
+  "originLabel": "逗子・葉山",
+  "destinationLabel": "金沢文庫",
+  "platform": "４",
+  "vehicleLabel": "4両",
+  "sourceTags": [
+    "timetable"
+  ],
+  "encoding": "shift_jis",
+  "sourceUrl": "https://app-kq.net/api/locationTimetable/8601-1-1663X"
+}
