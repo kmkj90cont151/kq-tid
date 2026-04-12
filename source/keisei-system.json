@@ -1,0 +1,12 @@
+{
+"file":{
+"traffic_info":"/data/traffic_info.json",
+"keisei_info":"/data/dia_info_new.txt",
+"hokuso_info":"/data/dia_info_h_new.txt",
+"matsudo_date":"/data/matsudo_date.json",
+"matsudo_train_info":"/data/matsudo_train_info.json",
+"matsudo_status":"/data/matsudo_status.json"
+},
+"version":"2.06"
+}
+

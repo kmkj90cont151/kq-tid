@@ -5,7 +5,6 @@ import json
 import re
 import shutil
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,7 +14,8 @@ TOOLS_DIR = ROOT / "tools"
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
-from keikyu_local_core import APP_VERSION, build_keikyu_snapshot, build_keikyu_train_detail  # noqa: E402
+from keikyu_local_core import build_keikyu_train_detail  # noqa: E402
+from multi_network_build import build_site_payloads  # noqa: E402
 
 
 def write_json(path: Path, payload: object) -> None:
@@ -34,102 +34,96 @@ def copy_web_assets(output_dir: Path) -> None:
     (output_dir / ".nojekyll").write_text("", encoding="utf-8")
 
 
-def build_keikyu_network(output_dir: Path) -> dict[str, object]:
-    snapshot = build_keikyu_snapshot()
-    trains = []
+def build_keikyu_detail_files(output_dir: Path, network: dict[str, object]) -> int:
     detail_count = 0
     detail_errors: list[str] = []
 
-    for train in snapshot.get("trains", []):
-        train_copy = dict(train)
-        request = train_copy.get("detailRequest") or {}
-        if train_copy.get("detailAvailable") and request:
-            direction_code = str(request.get("directionCode") or "1")
-            slug = safe_slug(f"{request.get('trainNumber', '')}-{direction_code}")
-            detail_relative = Path("data") / "details" / "keikyu" / f"{slug}.json"
-            detail_path = output_dir / detail_relative
-            try:
-                detail_payload = build_keikyu_train_detail(
-                    str(request.get("trainNumber") or ""),
-                    str(request.get("lineId") or "main"),
-                    str(request.get("positionCode") or ""),
-                    direction_code,
-                )
-                detail_count += 1
-            except Exception as exc:
-                detail_payload = {
-                    "detailKey": train_copy.get("detailKey", ""),
-                    "detailRows": [],
-                    "detailSummary": "京急列車別時刻表",
-                    "originLabel": "",
-                    "destinationLabel": "",
-                    "platform": "",
-                    "vehicleLabel": "",
-                    "sourceTags": ["timetable"],
-                    "error": str(exc),
-                }
-                detail_errors.append(f"{train_copy.get('trainNumber', '?')}: {exc}")
+    for train in network.get("trains", []):
+        if not isinstance(train, dict):
+            continue
+        request = train.get("detailRequest") or {}
+        if not (train.get("detailAvailable") and isinstance(request, dict)):
+            continue
 
-            write_json(detail_path, detail_payload)
-            train_copy["detailUrl"] = detail_relative.as_posix()
+        direction_code = str(request.get("directionCode") or "1")
+        slug = safe_slug(f"{request.get('trainNumber', '')}-{direction_code}")
+        detail_relative = Path("data") / "details" / "keikyu" / f"{slug}.json"
+        detail_path = output_dir / detail_relative
 
-        trains.append(train_copy)
+        try:
+            detail_payload = build_keikyu_train_detail(
+                str(request.get("trainNumber") or ""),
+                str(request.get("lineId") or "main"),
+                str(request.get("positionCode") or ""),
+                direction_code,
+            )
+            detail_count += 1
+        except Exception as exc:
+            detail_payload = {
+                "detailKey": train.get("detailKey", ""),
+                "detailRows": [],
+                "detailSummary": "京急列車別時刻表",
+                "originLabel": "",
+                "destinationLabel": "",
+                "platform": "",
+                "vehicleLabel": "",
+                "sourceTags": ["timetable"],
+                "error": str(exc),
+            }
+            detail_errors.append(f"{train.get('trainNumber', '?')}: {exc}")
 
-    network_payload = dict(snapshot)
-    network_payload["trains"] = trains
-    network_payload.setdefault("warnings", [])
+        write_json(detail_path, detail_payload)
+        train["detailUrl"] = detail_relative.as_posix()
+
     if detail_errors:
-        network_payload["warnings"] = network_payload["warnings"] + [
-            f"時刻表を取得できなかった列車が {len(detail_errors)} 本あります。詳細カードにエラー内容を残しています。"
-        ]
-    network_payload.setdefault("meta", {})
-    network_payload["meta"]["detailCount"] = detail_count
+        warnings = list(network.get("warnings", []))
+        warnings.append(f"京急時刻表を作成できなかった列車が {len(detail_errors)} 本ありました。")
+        network["warnings"] = warnings
+        network.setdefault("meta", {})
+        network["meta"]["detailErrors"] = detail_errors[:10]
 
-    network_relative = Path("data") / "networks" / "keikyu.json"
-    write_json(output_dir / network_relative, network_payload)
-
-    return {
-        "id": network_payload["id"],
-        "label": network_payload["label"],
-        "description": network_payload.get("description", ""),
-        "accentColor": network_payload.get("accentColor", "#d72731"),
-        "updatedAt": network_payload.get("updatedAt", ""),
-        "trainCount": len(trains),
-        "detailCount": detail_count,
-        "dataUrl": network_relative.as_posix(),
-        "sourceUrls": network_payload.get("sourceUrls", []),
-    }
+    network.setdefault("meta", {})
+    network["meta"]["detailCount"] = detail_count
+    return detail_count
 
 
-def build_site(output_dir: Path) -> Path:
+def build_site(output_dir: Path, fixtures_dir: Path | None = None) -> Path:
     copy_web_assets(output_dir)
-    build_timestamp = datetime.now(timezone.utc).isoformat()
-    network_entries = [build_keikyu_network(output_dir)]
-    manifest = {
-        "appName": "在線位置研究ビューア",
-        "appVersion": APP_VERSION,
-        "buildTimestamp": build_timestamp,
-        "publishTarget": "github-pages",
-        "refreshPolicy": "GitHub Actions で約10分ごとに再生成",
-        "networks": network_entries,
-        "notes": [
-            "GitHub Pages 版は Python のビルド結果を静的配信します。",
-            "ブラウザでは列車カードを開いたときだけ詳細 JSON を読み込みます。",
-            "現在の GitHub Pages 版は京急を正式対応対象にしています。",
-        ],
-    }
+    networks, manifest = build_site_payloads(fixtures_dir)
+
+    for network in networks:
+        if network.get("id") == "keikyu":
+            build_keikyu_detail_files(output_dir, network)
+        write_json(output_dir / "data" / "networks" / f"{network['id']}.json", network)
+
+    manifest["networks"] = [
+        {
+            "id": network["id"],
+            "label": network["label"],
+            "description": network["description"],
+            "accentColor": network["accentColor"],
+            "updatedAt": network.get("updatedAt", ""),
+            "trainCount": len(network.get("trains", [])) if isinstance(network.get("trains"), list) else 0,
+            "detailCount": network.get("meta", {}).get("detailCount", 0) if isinstance(network.get("meta"), dict) else 0,
+            "dataUrl": f"data/networks/{network['id']}.json",
+            "sourceUrls": network.get("sourceUrls", []),
+        }
+        for network in networks
+    ]
     write_json(output_dir / "data" / "manifest.json", manifest)
     return output_dir
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="GitHub Pages 向けの静的サイトを生成します。")
+    parser = argparse.ArgumentParser(description="GitHub Pages 向けの多路線静的サイトを生成します。")
     parser.add_argument("--output", default=str(ROOT / "site"), help="出力先ディレクトリ")
+    parser.add_argument("--fixtures-dir", default="", help="ローカル fixture のディレクトリ")
     args = parser.parse_args()
 
     output_dir = Path(args.output).resolve()
-    built_dir = build_site(output_dir)
-    print(f"Built site: {built_dir}")
+    fixtures_dir = Path(args.fixtures_dir).resolve() if args.fixtures_dir else None
+    built_dir = build_site(output_dir, fixtures_dir)
+    print(f"サイト生成完了: {built_dir}")
     return 0
 
 

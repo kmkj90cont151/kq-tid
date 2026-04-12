@@ -1,6 +1,7 @@
 const state = {
   manifest: null,
   activeNetworkId: "",
+  viewMode: "list",
   networkCache: {},
   networkErrors: {},
   detailCache: {},
@@ -16,17 +17,27 @@ const state = {
 const elements = {};
 
 document.addEventListener("DOMContentLoaded", () => {
+  cacheElements();
+  bindEvents();
+  loadManifest().catch(renderFatal);
+});
+
+function cacheElements() {
   elements.refreshButton = document.getElementById("refreshButton");
   elements.searchInput = document.getElementById("searchInput");
   elements.flaggedOnlyToggle = document.getElementById("flaggedOnlyToggle");
   elements.showRawToggle = document.getElementById("showRawToggle");
   elements.buildTimestamp = document.getElementById("buildTimestamp");
   elements.buildVersion = document.getElementById("buildVersion");
+  elements.networkCount = document.getElementById("networkCount");
   elements.tabBar = document.getElementById("tabBar");
+  elements.modeBar = document.getElementById("modeBar");
   elements.statusBar = document.getElementById("statusBar");
   elements.networkMeta = document.getElementById("networkMeta");
   elements.listings = document.getElementById("listings");
+}
 
+function bindEvents() {
   elements.refreshButton.addEventListener("click", () => refreshAll());
   elements.searchInput.addEventListener("input", (event) => {
     state.search = String(event.target.value || "").trim().toLowerCase();
@@ -40,11 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
     state.showRaw = Boolean(event.target.checked);
     render();
   });
-
-  loadManifest().catch((error) => {
-    renderFatal(error);
-  });
-});
+  elements.tabBar.addEventListener("click", onTabBarClick);
+  elements.modeBar.addEventListener("click", onModeBarClick);
+}
 
 async function fetchJson(path, bust = false) {
   const url = new URL(path, window.location.href);
@@ -64,10 +73,14 @@ async function loadManifest(refresh = false) {
   try {
     const manifest = await fetchJson("data/manifest.json", refresh);
     state.manifest = manifest;
-    const firstNetworkId = manifest.networks && manifest.networks.length > 0 ? manifest.networks[0].id : "";
-    if (!state.activeNetworkId || !manifest.networks.some((network) => network.id === state.activeNetworkId)) {
+
+    const networks = Array.isArray(manifest.networks) ? manifest.networks : [];
+    const firstNetworkId = networks.length > 0 ? networks[0].id : "";
+    const activeStillValid = networks.some((network) => network.id === state.activeNetworkId);
+    if (!state.activeNetworkId || !activeStillValid) {
       state.activeNetworkId = firstNetworkId;
     }
+
     if (state.activeNetworkId) {
       await loadNetwork(state.activeNetworkId, refresh);
     }
@@ -96,7 +109,8 @@ async function loadNetwork(networkId, refresh = false) {
   render();
 
   try {
-    state.networkCache[networkId] = await fetchJson(entry.dataUrl, refresh);
+    const network = await fetchJson(entry.dataUrl, refresh);
+    state.networkCache[networkId] = normalizeNetwork(network, entry);
   } catch (error) {
     state.networkErrors[networkId] = String(error);
   } finally {
@@ -112,6 +126,42 @@ async function refreshAll() {
   state.detailLoading = {};
   state.openDetailKeys = {};
   await loadManifest(true);
+}
+
+function normalizeNetwork(network, manifestEntry) {
+  return {
+    ...manifestEntry,
+    ...network,
+    sourceUrls: Array.isArray(network.sourceUrls) && network.sourceUrls.length > 0
+      ? network.sourceUrls
+      : Array.isArray(manifestEntry.sourceUrls)
+        ? manifestEntry.sourceUrls
+        : [],
+  };
+}
+
+function onTabBarClick(event) {
+  const button = event.target.closest("[data-network-id]");
+  if (!button) {
+    return;
+  }
+  const networkId = button.dataset.networkId || "";
+  state.activeNetworkId = networkId;
+  render();
+  loadNetwork(networkId, false).catch(renderFatal);
+}
+
+function onModeBarClick(event) {
+  const button = event.target.closest("[data-view-mode]");
+  if (!button) {
+    return;
+  }
+  const nextMode = button.dataset.viewMode || "list";
+  if (nextMode === state.viewMode) {
+    return;
+  }
+  state.viewMode = nextMode === "route" ? "route" : "list";
+  render();
 }
 
 function getManifestNetwork(networkId) {
@@ -144,6 +194,7 @@ function getVisibleTrains() {
       train.ownerLabel,
       train.note,
       train.positionCode,
+      train.vehicleLabel,
     ]
       .filter(Boolean)
       .join(" ")
@@ -153,16 +204,28 @@ function getVisibleTrains() {
 }
 
 function render() {
+  document.documentElement.dataset.viewMode = state.viewMode;
+  syncTheme();
   renderHeroMeta();
   renderTabs();
+  renderModeBar();
   renderStatus();
   renderMetaPanel();
   renderListings();
 }
 
+function syncTheme() {
+  const network = getActiveNetwork();
+  const accent = network && network.accentColor ? network.accentColor : "#d72731";
+  document.documentElement.style.setProperty("--network-accent", accent);
+}
+
 function renderHeroMeta() {
-  elements.buildTimestamp.textContent = `ビルド時刻: ${formatTimestamp(state.manifest && state.manifest.buildTimestamp)}`;
-  elements.buildVersion.textContent = `バージョン ${escapeText(state.manifest && state.manifest.appVersion || "-")}`;
+  const manifest = state.manifest || {};
+  const networks = Array.isArray(manifest.networks) ? manifest.networks : [];
+  elements.buildTimestamp.textContent = `ビルド時刻: ${formatTimestamp(manifest.buildTimestamp)}`;
+  elements.buildVersion.textContent = `バージョン: ${escapeText(manifest.appVersion || "-")}`;
+  elements.networkCount.textContent = `路線数: ${networks.length}`;
 }
 
 function renderTabs() {
@@ -175,20 +238,27 @@ function renderTabs() {
   elements.tabBar.innerHTML = networks
     .map((network) => {
       const activeClass = network.id === state.activeNetworkId ? " is-active" : "";
-      const count = state.networkCache[network.id] && Array.isArray(state.networkCache[network.id].trains)
-        ? ` ${state.networkCache[network.id].trains.length}本`
-        : "";
-      return `<button class="tab-button${activeClass}" type="button" data-network-id="${escapeHtml(network.id)}">${escapeHtml(network.label)}${escapeHtml(count)}</button>`;
+      const cached = state.networkCache[network.id];
+      const count = cached && Array.isArray(cached.trains)
+        ? cached.trains.length
+        : typeof network.trainCount === "number"
+          ? network.trainCount
+          : null;
+      const countLabel = count == null ? "" : ` ${count}`;
+      return `
+        <button class="tab-button${activeClass}" type="button" data-network-id="${escapeHtml(network.id)}" aria-pressed="${network.id === state.activeNetworkId ? "true" : "false"}">
+          ${escapeHtml(network.label || network.id)}${escapeHtml(countLabel)}
+        </button>
+      `;
     })
     .join("");
+}
 
-  elements.tabBar.querySelectorAll("[data-network-id]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const networkId = button.dataset.networkId || "";
-      state.activeNetworkId = networkId;
-      render();
-      await loadNetwork(networkId, false);
-    });
+function renderModeBar() {
+  elements.modeBar.querySelectorAll("[data-view-mode]").forEach((button) => {
+    const active = button.dataset.viewMode === state.viewMode;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
   });
 }
 
@@ -199,59 +269,297 @@ function renderStatus() {
   const researchCount = visibleTrains.filter((train) => Boolean(train.researchCandidate)).length;
   const loadingText = state.loadingManifest || state.loadingNetworkId ? "読込中" : "準備完了";
   const networkUpdatedAt = network ? formatTimestamp(network.updatedAt) : "-";
+  const modeLabel = state.viewMode === "route" ? "路線図" : "一覧";
 
   elements.statusBar.innerHTML = [
     renderStatusCard("状態", loadingText),
-    renderStatusCard("表示列車", network ? `${visibleTrains.length}本` : "-"),
-    renderStatusCard("遅延列車", network ? `${delayedCount}本` : "-"),
-    renderStatusCard("要確認", network ? `${researchCount}本` : "-"),
-    renderStatusCard("在線更新時刻", networkUpdatedAt),
+    renderStatusCard("表示モード", modeLabel),
+    renderStatusCard("表示列車", network ? `${visibleTrains.length}` : "-"),
+    renderStatusCard("遅延列車", network ? `${delayedCount}` : "-"),
+    renderStatusCard("要確認", network ? `${researchCount}` : "-"),
+    renderStatusCard("更新時刻", network ? networkUpdatedAt : "-"),
   ].join("");
 }
 
 function renderMetaPanel() {
   const manifestEntry = getManifestNetwork(state.activeNetworkId);
   const network = getActiveNetwork();
+
+  if (!manifestEntry) {
+    elements.networkMeta.innerHTML = '<div class="empty-state">路線データを読み込んでいます。</div>';
+    return;
+  }
+
   const warnings = network && Array.isArray(network.warnings) ? network.warnings : [];
   const notes = state.manifest && Array.isArray(state.manifest.notes) ? state.manifest.notes : [];
-  const sourceUrls = network && Array.isArray(network.sourceUrls) ? network.sourceUrls : manifestEntry && Array.isArray(manifestEntry.sourceUrls) ? manifestEntry.sourceUrls : [];
+  const sourceUrls = Array.isArray(network && network.sourceUrls) && network.sourceUrls.length > 0
+    ? network.sourceUrls
+    : Array.isArray(manifestEntry.sourceUrls)
+      ? manifestEntry.sourceUrls
+      : [];
   const error = state.networkErrors[state.activeNetworkId] || "";
+  const routeMap = extractRouteMapMeta(network);
+  const elesite = extractElesiteMeta(network);
 
-  const topRow = manifestEntry
+  const header = `
+    <div class="info-panel__header">
+      <div>
+        <h2 class="info-panel__title">${escapeHtml(manifestEntry.label || manifestEntry.id)}</h2>
+        <p class="info-panel__desc">${escapeHtml(manifestEntry.description || "")}</p>
+      </div>
+      <div class="pill-row">
+        <span class="pill">${escapeHtml(state.manifest && state.manifest.refreshPolicy ? state.manifest.refreshPolicy : "静的配信")}</span>
+        ${network && network.meta && network.meta.detailMode ? `<span class="pill">時刻表取得: ${escapeHtml(String(network.meta.detailMode))}</span>` : ""}
+        ${network && network.meta && network.meta.routeMapMode ? `<span class="pill">路線図: ${escapeHtml(String(network.meta.routeMapMode))}</span>` : ""}
+        ${network && network.meta && network.meta.detailCount != null ? `<span class="pill">詳細 JSON ${escapeHtml(String(network.meta.detailCount))} 件</span>` : ""}
+      </div>
+    </div>
+  `;
+
+  const sourceRow = sourceUrls.length > 0
     ? `
-      <div class="info-panel__header">
-        <div>
-          <h2 class="info-panel__title">${escapeHtml(manifestEntry.label)}</h2>
-          <p class="info-panel__desc">${escapeHtml(manifestEntry.description || "")}</p>
-        </div>
-        <div class="pill-row">
-          <span class="pill">${escapeHtml(state.manifest && state.manifest.refreshPolicy || "静的配信")}</span>
-          ${network && network.meta && network.meta.detailCount != null ? `<span class="pill">事前生成時刻表 ${escapeHtml(String(network.meta.detailCount))} 本</span>` : ""}
-        </div>
+      <div class="link-row">
+        ${sourceUrls.map((source) => `
+          <a class="source-link" href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">
+            ${escapeHtml(source.label || source.url)}
+          </a>
+        `).join("")}
       </div>
     `
-    : '<div class="info-panel__header"><div><h2 class="info-panel__title">ネットワーク未選択</h2></div></div>';
+    : "";
 
   const warningRow = warnings.length > 0
     ? `<div class="pill-row">${warnings.map((warning) => `<span class="pill pill--warn">${escapeHtml(warning)}</span>`).join("")}</div>`
     : "";
+
   const noteRow = notes.length > 0
     ? `<div class="pill-row">${notes.map((note) => `<span class="pill">${escapeHtml(note)}</span>`).join("")}</div>`
     : "";
-  const sourceRow = sourceUrls.length > 0
-    ? `<div class="link-row">${sourceUrls
-        .map((source) => `<a class="source-link" href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(source.label)}</a>`)
-        .join("")}</div>`
-    : "";
+
+  const routeMapRow = routeMap ? renderMetaSection("路線図メタ", routeMap) : "";
+  const elesiteRow = elesite ? renderElesitePanel(elesite) : "";
   const errorRow = error ? `<div class="pill-row"><span class="pill pill--error">${escapeHtml(error)}</span></div>` : "";
 
-  elements.networkMeta.innerHTML = `${topRow}${errorRow}${warningRow}${noteRow}${sourceRow}`;
+  elements.networkMeta.innerHTML = [
+    header,
+    errorRow,
+    warningRow,
+    noteRow,
+    sourceRow,
+    routeMapRow,
+    elesiteRow,
+  ].join("");
+}
+
+function renderMetaSection(title, meta, excludeKeys = []) {
+  const entries = collectMetaEntries(meta, excludeKeys);
+  if (entries.length === 0) {
+    return "";
+  }
+  return `
+    <section class="meta-section">
+      <h3 class="meta-section__title">${escapeHtml(title)}</h3>
+      <dl class="meta-list">
+        ${entries
+          .map(
+            ({ label, value }) => `
+              <div class="meta-list__item">
+                <dt>${escapeHtml(label)}</dt>
+                <dd>${value}</dd>
+              </div>
+            `,
+          )
+          .join("")}
+      </dl>
+    </section>
+  `;
+}
+
+function renderElesitePanel(meta) {
+  const specialKeys = [
+    "directionInfo",
+    "direction_info",
+    "railwayInfo",
+    "railway_info",
+    "todayDiaPattern",
+    "today_dia_pattern",
+    "rosenInfo",
+    "rosen_info",
+    "currentHenseiList",
+    "current_hensei_list",
+  ];
+  const blocks = [];
+
+  if (collectMetaEntries(meta).length > 0) {
+    blocks.push(renderMetaSection("えるサイト連携", meta));
+  }
+
+  const currentHenseiList = meta.currentHenseiList || meta.current_hensei_list;
+  if (Array.isArray(currentHenseiList) && currentHenseiList.length > 0) {
+    const chips = currentHenseiList
+      .slice(0, 12)
+      .map((item) => `<span class="chip">${escapeHtml(summarizeAny(item))}</span>`)
+      .join("");
+    blocks.push(`
+      <section class="meta-section">
+        <h3 class="meta-section__title">えるサイト編成情報</h3>
+        <div class="pill-row">${chips}</div>
+      </section>
+    `);
+  }
+
+  const routeMapMeta = meta.routeMap || meta.route_map;
+  if (routeMapMeta) {
+    blocks.push(renderMetaSection("えるサイト路線補助情報", routeMapMeta));
+  }
+
+  return blocks.join("");
+}
+
+function extractElesiteMeta(network) {
+  if (!network) {
+    return null;
+  }
+  const candidates = [
+    network.elesite,
+    network.elesiteMeta,
+    network.elesiteMetadata,
+    network.meta && network.meta.elesite,
+    network.meta && network.meta.elesiteMeta,
+    network.meta && network.meta.elesiteMetadata,
+    network.meta && network.meta.elesiteInfo,
+  ];
+  return candidates.find((candidate) => candidate && typeof candidate === "object") || null;
+}
+
+function extractRouteMapMeta(network) {
+  if (!network) {
+    return null;
+  }
+  const candidates = [
+    network.routeMap,
+    network.routeMapMeta,
+    network.routeMapMetadata,
+    network.meta && network.meta.routeMap,
+    network.meta && network.meta.routeMapMeta,
+    network.meta && network.meta.routeMapMetadata,
+  ];
+  const routeMap = candidates.find((candidate) => candidate && typeof candidate === "object") || null;
+  if (!routeMap) {
+    return null;
+  }
+  const summary = {
+    name: routeMap.title || routeMap.name || routeMap.label || network.label || network.id,
+    description: routeMap.description || routeMap.summary || routeMap.note || "",
+  };
+  const stations = routeMap.stations || routeMap.nodes || routeMap.locations;
+  if (Array.isArray(stations)) {
+    summary.stations = `${stations.length}`;
+  }
+  const lines = routeMap.lines || routeMap.lanes;
+  if (Array.isArray(lines)) {
+    summary.lanes = `${lines.length}`;
+  }
+  if (routeMap.updatedAt) {
+    summary.updatedAt = formatTimestamp(routeMap.updatedAt);
+  }
+  return summary;
+}
+
+function collectMetaEntries(meta, excludeKeys = []) {
+  if (!meta || typeof meta !== "object") {
+    return [];
+  }
+  return Object.entries(meta)
+    .filter(([key, value]) => !excludeKeys.includes(key) && value !== undefined && value !== null && value !== "")
+    .map(([key, value]) => ({
+      label: labelizeKey(key),
+      value: renderMetaValue(value),
+    }));
+}
+
+function renderMetaValue(value) {
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return '<span class="meta-value">0件</span>';
+    }
+    const preview = value.slice(0, 3).map((item) => escapeHtml(summarizeAny(item))).join(" / ");
+    const suffix = value.length > 3 ? ` ... +${value.length - 3}` : "";
+    return `<span class="meta-value">${preview}${escapeHtml(suffix)}</span>`;
+  }
+
+  if (value && typeof value === "object") {
+    const pairs = Object.entries(value)
+      .filter(([, child]) => child !== undefined && child !== null && child !== "")
+      .slice(0, 4)
+      .map(([key, child]) => `${labelizeKey(key)}: ${summarizeAny(child)}`);
+    return `<span class="meta-value">${escapeHtml(pairs.join(" / ") || JSON.stringify(value).slice(0, 180))}</span>`;
+  }
+
+  return `<span class="meta-value">${escapeHtml(String(value))}</span>`;
+}
+
+function summarizeAny(value) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    return `${value.length}件`;
+  }
+  if (typeof value === "object") {
+    return value.label || value.name || value.title || value.id || JSON.stringify(value);
+  }
+  return String(value);
+}
+
+function labelizeKey(key) {
+  const mapping = {
+    id: "ID",
+    label: "ラベル",
+    description: "説明",
+    status: "状態",
+    updatedAt: "更新時刻",
+    source: "参照元",
+    sourceUrl: "参照 URL",
+    networkSource: "在線取得元",
+    detailMode: "時刻表取得方式",
+    routeMapMode: "路線図方式",
+    detailCount: "detail 件数",
+    title: "タイトル",
+    name: "名称",
+    summary: "概要",
+    note: "メモ",
+    directionInfo: "方向情報",
+    direction_info: "方向情報",
+    railwayInfo: "運行情報",
+    railway_info: "運行情報",
+    todayDiaPattern: "当日ダイヤ",
+    today_dia_pattern: "当日ダイヤ",
+    rosenInfo: "路線情報",
+    rosen_info: "路線情報",
+    currentHenseiList: "現行編成",
+    current_hensei_list: "現行編成",
+  };
+  if (mapping[key]) {
+    return mapping[key];
+  }
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function renderListings() {
   const network = getActiveNetwork();
   if (state.loadingManifest || (state.loadingNetworkId && state.loadingNetworkId === state.activeNetworkId && !network)) {
-    elements.listings.innerHTML = '<div class="empty-state">在線データを読み込んでいます。</div>';
+    elements.listings.innerHTML = '<div class="empty-state">路線データを読み込んでいます。</div>';
     return;
   }
   if (state.networkErrors[state.activeNetworkId]) {
@@ -259,7 +567,7 @@ function renderListings() {
     return;
   }
   if (!network) {
-    elements.listings.innerHTML = '<div class="empty-state">表示するネットワークがまだありません。</div>';
+    elements.listings.innerHTML = '<div class="empty-state">表示できる路線がまだありません。</div>';
     return;
   }
 
@@ -269,35 +577,58 @@ function renderListings() {
     return;
   }
 
-  const grouped = groupTrains(trains);
-  elements.listings.innerHTML = grouped.map(renderDirectionGroup).join("");
+  elements.listings.innerHTML = state.viewMode === "route"
+    ? renderRouteMapView(trains)
+    : renderListView(trains);
   bindDetails();
 }
 
-function groupTrains(trains) {
+function renderListView(trains) {
+  return groupTrainsByDirection(trains).map(renderDirectionGroup).join("");
+}
+
+function renderRouteMapView(trains) {
+  return groupTrainsByDirection(trains).map(renderRouteMapDirectionGroup).join("");
+}
+
+function groupTrainsByDirection(trains) {
   const directionBuckets = new Map();
+
   trains.forEach((train) => {
-    const directionKey = train.directionLabel || "方向不明";
+    const directionKey = train.directionCode || train.directionLabel || "unknown";
     if (!directionBuckets.has(directionKey)) {
-      directionBuckets.set(directionKey, []);
+      directionBuckets.set(directionKey, {
+        directionLabel: train.directionLabel || "方向不明",
+        trains: [],
+      });
     }
-    directionBuckets.get(directionKey).push(train);
+    directionBuckets.get(directionKey).trains.push(train);
   });
 
-  return Array.from(directionBuckets.entries()).map(([directionLabel, directionTrains]) => {
+  return Array.from(directionBuckets.values()).map((bucket) => {
     const locationBuckets = new Map();
-    directionTrains.forEach((train) => {
-      const key = `${train.positionOrder}:${train.locationLabel || "位置不明"}`;
+    bucket.trains.forEach((train) => {
+      const key = `${Number(train.positionOrder || 0)}:${train.locationLabel || "位置不明"}`;
       if (!locationBuckets.has(key)) {
-        locationBuckets.set(key, { locationLabel: train.locationLabel || "位置不明", trains: [] });
+        locationBuckets.set(key, {
+          locationLabel: train.locationLabel || "位置不明",
+          positionOrder: Number(train.positionOrder || 0),
+          positionCode: train.positionCode || "",
+          trains: [],
+        });
       }
       locationBuckets.get(key).trains.push(train);
     });
 
     return {
-      directionLabel,
-      trains: directionTrains,
-      locations: Array.from(locationBuckets.values()),
+      directionLabel: bucket.directionLabel,
+      trains: bucket.trains.slice().sort(compareTrain),
+      locations: Array.from(locationBuckets.values())
+        .sort((left, right) => left.positionOrder - right.positionOrder)
+        .map((location) => ({
+          ...location,
+          trains: location.trains.slice().sort(compareTrain),
+        })),
     };
   });
 }
@@ -305,13 +636,13 @@ function groupTrains(trains) {
 function renderDirectionGroup(group) {
   const locationBlocks = group.locations
     .map((location) => {
-      const cards = location.trains
-        .sort((left, right) => compareTrain(left, right))
-        .map((train) => renderTrainCard(train))
-        .join("");
+      const cards = location.trains.map((train) => renderTrainCard(train)).join("");
       return `
         <section class="location-group">
-          <h3 class="location-group__title">${escapeHtml(location.locationLabel)} <span class="group__meta">${escapeHtml(String(location.trains.length))}本</span></h3>
+          <h3 class="location-group__title">
+            ${escapeHtml(location.locationLabel)}
+            <span class="group__meta">${escapeHtml(String(location.trains.length))}</span>
+          </h3>
           <div class="train-list">${cards}</div>
         </section>
       `;
@@ -322,20 +653,69 @@ function renderDirectionGroup(group) {
     <section class="group">
       <div class="group__header">
         <h2 class="group__title">${escapeHtml(group.directionLabel)}</h2>
-        <div class="group__meta">${escapeHtml(String(group.trains.length))}本</div>
+        <div class="group__meta">${escapeHtml(String(group.trains.length))}</div>
       </div>
       <div class="location-grid">${locationBlocks}</div>
     </section>
   `;
 }
 
-function renderTrainCard(train) {
-  const detail = state.detailCache[train.detailKey] || null;
+function renderRouteMapDirectionGroup(group) {
+  const lane = group.locations
+    .map((location) => {
+      const cards = location.trains.map((train) => renderTrainCard(train, { compact: true })).join("");
+      return `
+        <article class="route-node">
+          <div class="route-node__head">
+            <div class="route-node__position">${escapeHtml(location.positionCode || String(location.positionOrder))}</div>
+            <div class="route-node__label">${escapeHtml(location.locationLabel)}</div>
+          </div>
+          <div class="route-node__meta">${escapeHtml(String(location.trains.length))}</div>
+          <div class="route-node__body">${cards}</div>
+        </article>
+      `;
+    })
+    .join("");
+
+  return `
+    <section class="route-map">
+      <div class="route-map__header">
+        <h2 class="route-map__title">${escapeHtml(group.directionLabel)}</h2>
+        <div class="route-map__meta">${escapeHtml(String(group.trains.length))}</div>
+      </div>
+      <div class="route-map__lane">${lane}</div>
+    </section>
+  `;
+}
+
+function getInlineDetail(train) {
+  if (!train) {
+    return null;
+  }
+  const rows = Array.isArray(train.detailRows) ? train.detailRows : [];
+  if (rows.length === 0 && !train.originLabel && !train.destinationLabel && !train.platform && !train.vehicleLabel) {
+    return null;
+  }
+  return {
+    detailKey: train.detailKey || "",
+    detailRows: rows,
+    detailSummary: train.detailSummary || "",
+    originLabel: train.originLabel || "",
+    destinationLabel: train.destinationLabel || "",
+    platform: train.platform || "",
+    vehicleLabel: train.vehicleLabel || "",
+    sourceTags: Array.isArray(train.sourceTags) ? train.sourceTags : [],
+  };
+}
+
+function renderTrainCard(train, options = {}) {
+  const compact = Boolean(options.compact);
+  const detail = state.detailCache[train.detailKey] || getInlineDetail(train) || null;
   const loading = Boolean(state.detailLoading[train.detailKey]);
   const open = Boolean(state.openDetailKeys[train.detailKey]);
   const routeText = [detail && detail.originLabel || train.originLabel, detail && detail.destinationLabel || train.destinationLabel]
     .filter(Boolean)
-    .join(" -> ");
+    .join(" → ");
 
   const chips = [
     train.lineLabel ? `<span class="chip">${escapeHtml(train.lineLabel)}</span>` : "",
@@ -351,23 +731,26 @@ function renderTrainCard(train) {
   const detailMarkup = train.detailAvailable
     ? `
       <details data-detail-key="${escapeHtml(train.detailKey)}" ${open ? "open" : ""}>
-        <summary>京急列車別時刻表</summary>
+        <summary>時刻表</summary>
         ${renderDetailBody(detail, loading)}
       </details>
     `
     : "";
 
   return `
-    <article class="train-card">
+    <article class="train-card${compact ? " train-card--compact" : ""}">
       <div class="train-card__top">
         <div>
           <div class="train-card__number">${escapeHtml(train.trainNumber)}</div>
-          <span class="service-badge" style="--service-bg:${escapeHtml(train.serviceColor || "#7c6755")};--service-fg:${escapeHtml(train.serviceTextColor || "#ffffff")}">${escapeHtml(train.serviceTypeLabel || "不明")}</span>
+          <span
+            class="service-badge"
+            style="--service-bg:${escapeHtml(train.serviceColor || "#7c6755")};--service-fg:${escapeHtml(train.serviceTextColor || "#ffffff")}"
+          >${escapeHtml(train.serviceTypeLabel || "種別不明")}</span>
         </div>
         <div class="train-card__direction">${escapeHtml(train.directionLabel || "方向不明")}</div>
       </div>
       <div class="train-card__location">${escapeHtml(train.locationLabel || "位置不明")}</div>
-      <div class="train-card__route">${escapeHtml(routeText || "始発・行先情報なし")}</div>
+      <div class="train-card__route">${escapeHtml(routeText || "行先情報なし")}</div>
       <div class="chip-row">${chips}</div>
       ${state.showRaw && train.note ? `<div class="train-card__note">${escapeHtml(train.note)}</div>` : ""}
       ${detailMarkup}
@@ -383,15 +766,16 @@ function renderDetailBody(detail, loading) {
     return `<div class="detail-status is-error">${escapeHtml(detail.error)}</div>`;
   }
   if (!detail) {
-    return '<div class="detail-status">カードを開いたタイミングで時刻表 JSON を読み込みます。</div>';
+    return '<div class="detail-status">列車カードを開くと時刻表を読み込みます。</div>';
   }
 
-  const rows = Array.isArray(detail.detailRows) ? detail.detailRows : [];
+  const rows = Array.isArray(detail.detailRows) ? detail.detailRows : Array.isArray(detail.rows) ? detail.rows : [];
   const summaryChips = [
     detail.originLabel ? `<span class="chip">${escapeHtml(detail.originLabel)}</span>` : "",
     detail.destinationLabel ? `<span class="chip">${escapeHtml(detail.destinationLabel)}</span>` : "",
     detail.platform ? `<span class="chip">${escapeHtml(detail.platform)}番線</span>` : "",
     detail.vehicleLabel ? `<span class="chip">${escapeHtml(detail.vehicleLabel)}</span>` : "",
+    detail.encoding ? `<span class="chip">${escapeHtml(detail.encoding)}</span>` : "",
   ]
     .filter(Boolean)
     .join("");
@@ -438,10 +822,11 @@ function bindDetails() {
       if (!detailKey) {
         return;
       }
+
       if (detailsElement.open) {
         state.openDetailKeys[detailKey] = true;
         const train = findTrainByDetailKey(detailKey);
-        if (train && !state.detailCache[detailKey] && !state.detailLoading[detailKey]) {
+        if (train && train.detailUrl && !state.detailCache[detailKey] && !state.detailLoading[detailKey]) {
           loadDetail(train).catch((error) => {
             state.detailCache[detailKey] = { error: String(error), detailRows: [] };
             render();
@@ -506,7 +891,8 @@ function formatDelay(value) {
   if (!Number.isFinite(minutes) || minutes <= 0) {
     return "定時";
   }
-  return `${minutes}分遅れ`;
+  const normalized = Number.isInteger(minutes) ? String(minutes) : minutes.toFixed(1).replace(/\.0$/, "");
+  return `${normalized}分遅れ`;
 }
 
 function formatTimestamp(value) {

@@ -11,20 +11,21 @@
     <div class="page-glow"></div>
     <div class="app-shell">
       <header class="hero">
-        <div class="hero__eyebrow">GitHub Pages / Python Build</div>
+        <div class="hero__eyebrow">GitHub Pages / Python 静的ビルド</div>
         <div class="hero__main">
-          <div>
+          <div class="hero__copy">
             <h1>在線位置研究ビューア</h1>
             <p class="hero__lead">
-              Python で在線データと列車別時刻表を取得し、GitHub Pages に配布するための静的サイトです。
-              まずは京急を正式対応対象にしており、列車カードを開いたときだけ時刻表 JSON を後読みします。
+              京急・都営浅草線・京成線・京成松戸線をタブで切り替えながら、在線位置、遅延、行先、列車別時刻表を確認できます。
+              一覧表示に加えて、位置の流れを追いやすい路線図モードも使えます。
             </p>
           </div>
           <button id="refreshButton" class="primary-button" type="button">再取得</button>
         </div>
         <div class="hero__meta">
           <span id="buildTimestamp">ビルド時刻: -</span>
-          <span id="buildVersion">バージョン -</span>
+          <span id="buildVersion">バージョン: -</span>
+          <span id="networkCount">路線数: -</span>
         </div>
       </header>
 
@@ -33,7 +34,13 @@
           <div class="controls__row">
             <label class="field">
               <span class="field__label">検索</span>
-              <input id="searchInput" class="text-input" type="search" placeholder="例: 1403A / 京急久里浜 / 快特 / 金沢文庫">
+              <input
+                id="searchInput"
+                class="text-input"
+                type="search"
+                placeholder="列番 / 路線 / 駅名 / 種別 / 行先 / 車両"
+                autocomplete="off"
+              >
             </label>
             <label class="toggle">
               <input id="flaggedOnlyToggle" type="checkbox">
@@ -41,10 +48,16 @@
             </label>
             <label class="toggle">
               <input id="showRawToggle" type="checkbox" checked>
-              <span>raw コード表示</span>
+              <span>raw メモ表示</span>
             </label>
           </div>
-          <div id="tabBar" class="tab-bar"></div>
+
+          <div id="modeBar" class="mode-bar" role="tablist" aria-label="表示モード">
+            <button class="mode-button is-active" type="button" data-view-mode="list" aria-pressed="true">一覧</button>
+            <button class="mode-button" type="button" data-view-mode="route" aria-pressed="false">路線図</button>
+          </div>
+
+          <div id="tabBar" class="tab-bar" aria-label="路線選択"></div>
         </section>
 
         <section id="statusBar" class="status-grid"></section>
@@ -53,8 +66,7 @@
       </main>
 
       <footer class="footer">
-        GitHub Pages は Python を実行時に動かせないため、このリポジトリでは Python をビルド時だけ使い、
-        生成した JSON と HTML/CSS/JavaScript を静的配信します。
+        GitHub Pages では Python を実行時に動かせないため、このサイトは Python で生成した JSON を静的配信しています。
       </footer>
     </div>
 
