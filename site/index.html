@@ -4,44 +4,45 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
-    <title>在線位置研究ビューア</title>
+    <title>在線位置情報ビューア</title>
     <link rel="stylesheet" href="./assets/styles.css">
   </head>
   <body>
-    <div class="page-glow"></div>
     <div class="app-shell">
       <header class="hero">
-        <div class="hero__eyebrow">GitHub Pages / Python Build</div>
+        <div class="hero__eyebrow">GitHub Pages / ライブAPI表示</div>
         <div class="hero__main">
           <div>
-            <h1>在線位置研究ビューア</h1>
+            <h1>在線位置情報ビューア</h1>
             <p class="hero__lead">
-              Python で在線データと列車別時刻表を取得し、GitHub Pages に配布するための静的サイトです。
-              まずは京急を正式対応対象にしており、列車カードを開いたときだけ時刻表 JSON を後読みします。
+              京急、都営浅草線、京成線、松戸線の在線位置を、旧GAS版と近い見せ方でまとめたビューアです。
+              路線タブを開いたタイミングで公式・公開APIを取得し、アクティブなタブだけを15秒ごとに更新します。
+              京急の列車別時刻表と京成の列車別時刻表は、列車カードを開いたときだけ後読みします。
             </p>
           </div>
-          <button id="refreshButton" class="primary-button" type="button">再取得</button>
+          <button id="refreshButton" class="primary-button" type="button">今すぐ更新</button>
         </div>
         <div class="hero__meta">
-          <span id="buildTimestamp">ビルド時刻: -</span>
-          <span id="buildVersion">バージョン -</span>
+          <span id="refreshMeta">更新間隔: 15秒</span>
+          <span id="buildVersion">バージョン: -</span>
+          <span id="buildTimestamp">初回読込: -</span>
         </div>
       </header>
 
       <main class="content">
-        <section class="panel">
+        <section class="panel controls">
           <div class="controls__row">
             <label class="field">
               <span class="field__label">検索</span>
-              <input id="searchInput" class="text-input" type="search" placeholder="例: 1403A / 京急久里浜 / 快特 / 金沢文庫">
+              <input id="searchInput" class="text-input" type="search" placeholder="例: 1403A / 京急川崎 / E011 / 快特">
             </label>
             <label class="toggle">
-              <input id="flaggedOnlyToggle" type="checkbox">
-              <span>要確認のみ</span>
+              <input id="inferredOnlyToggle" type="checkbox">
+              <span>補完・推定を含む列車のみ</span>
             </label>
             <label class="toggle">
               <input id="showRawToggle" type="checkbox" checked>
-              <span>raw コード表示</span>
+              <span>rawコードも表示</span>
             </label>
           </div>
           <div id="tabBar" class="tab-bar"></div>
@@ -53,11 +54,14 @@
       </main>
 
       <footer class="footer">
-        GitHub Pages は Python を実行時に動かせないため、このリポジトリでは Python をビルド時だけ使い、
-        生成した JSON と HTML/CSS/JavaScript を静的配信します。
+        <span><a href="https://app-kq.net/web/jp/html/zaisen.html" target="_blank" rel="noopener noreferrer">京急公式在線</a></span>
+        <span><a href="https://zaisen.tid-keisei.jp/html/zaisen.html?line=1" target="_blank" rel="noopener noreferrer">京成公式在線</a></span>
+        <span><a href="https://www.elesite-next.com/train_location" target="_blank" rel="noopener noreferrer">えるサイト</a></span>
       </footer>
     </div>
 
+    <script src="./assets/config.js"></script>
+    <script src="./assets/live-data.js"></script>
     <script src="./assets/app.js"></script>
   </body>
 </html>
