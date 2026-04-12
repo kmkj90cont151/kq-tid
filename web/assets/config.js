@@ -3,7 +3,9 @@
   const defaults = {
     refreshIntervalMs: 15000,
     odptConsumerKey: "qkpjriztbhvaxwjzum1oluug1hnfvwfq3ztxnsb56xtbt6qve7zdwv8bb73ajavy",
-    keikyuProxyTemplate: "https://keikyu-proxy.takuma3017.workers.dev/?url={url}",
+    keikyuProxyTemplate: isLocal
+      ? "/proxy?url={url}"
+      : "https://keikyu-proxy.takuma3017.workers.dev/?url={url}",
   };
 
   window.APP_CONFIG = Object.assign({}, defaults, window.APP_CONFIG || {});
