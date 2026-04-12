@@ -224,6 +224,17 @@
 
   const LIVE_CACHE = new Map();
 
+  function normalizeKeiseiDirectionCode(value) {
+    const code = stringOrEmpty(value).trim();
+    if (code === "0") {
+      return "0";
+    }
+    if (code === "1") {
+      return "1";
+    }
+    return code;
+  }
+
   function stringOrEmpty(value) {
     return value == null ? "" : String(value);
   }
@@ -1366,7 +1377,7 @@
     const destinationEntry = config.ikisakiByCode[record.raw.ik] || null;
     const serviceTypeLabel = stringOrEmpty(serviceEntry && serviceEntry.name) || "不明";
     const destinationLabel = stringOrEmpty(destinationEntry && destinationEntry.name);
-    const directionCode = stringOrEmpty(record.raw.hk).trim();
+    const directionCode = normalizeKeiseiDirectionCode(record.raw.hk);
     const palette = pickPalette(serviceTypeLabel);
     const trainNumber = record.trainNumber || "(列番なし)";
 

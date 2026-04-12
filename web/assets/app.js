@@ -165,7 +165,7 @@ function hydrateNetworkSnapshot(network) {
 }
 
 function hydrateTrain(networkId, train) {
-  const hydrated = Object.assign({}, train, { networkId });
+  const hydrated = normalizeTrainForDisplay(networkId, Object.assign({}, train, { networkId }));
   const detailKey = hydrated.detailKey || (hydrated.detailAvailable ? buildFallbackDetailKey(networkId, hydrated) : "");
 
   if (detailKey) {
@@ -220,7 +220,7 @@ function mergeTrainDetail(train, detail) {
 
   merged.detailLoaded = Boolean(detail.detailLoaded);
   merged.detailError = detail.error || "";
-  return merged;
+  return normalizeTrainForDisplay(merged.networkId, merged);
 }
 
 function mergeDetailIntoNetworks(detailKey, detail) {
@@ -677,11 +677,39 @@ function getTrainDirectionCode(train) {
   return String(train.directionCode == null ? "" : train.directionCode).trim();
 }
 
+function normalizeKeiseiDirectionCode(value) {
+  const code = String(value == null ? "" : value).trim();
+  if (code === "0") {
+    return "0";
+  }
+  if (code === "1") {
+    return "1";
+  }
+  return code;
+}
+
+function normalizeTrainForDisplay(networkId, train) {
+  if (!train || networkId !== "keisei") {
+    return train;
+  }
+
+  const directionCode = normalizeKeiseiDirectionCode(getTrainDirectionCode(train));
+  const normalized = Object.assign({}, train, { directionCode });
+
+  if (directionCode === "0") {
+    normalized.directionLabel = "上り";
+  } else if (directionCode === "1") {
+    normalized.directionLabel = "下り";
+  }
+
+  return normalized;
+}
+
 function getDirectionGroupKey(network, train) {
   if (network && network.id === "keisei") {
-    const label = getDisplayDirectionLabel(train);
-    if (label === "上り" || label === "下り") {
-      return label;
+    const directionCode = normalizeKeiseiDirectionCode(getTrainDirectionCode(train));
+    if (directionCode === "0" || directionCode === "1") {
+      return directionCode;
     }
   }
 
@@ -690,7 +718,9 @@ function getDirectionGroupKey(network, train) {
 
 function getDisplayDirectionLabel(train) {
   const networkId = String((train && train.networkId) || "").trim();
-  const directionCode = getTrainDirectionCode(train);
+  const directionCode = networkId === "keisei"
+    ? normalizeKeiseiDirectionCode(getTrainDirectionCode(train))
+    : getTrainDirectionCode(train);
   if (networkId === "keisei") {
     if (directionCode === "0") {
       return "上り";
