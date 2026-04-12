@@ -401,7 +401,7 @@ function renderListings() {
 function renderLinePanel(network, lineLabel, trains) {
   const directions = groupBy(trains, (train) => `${train.directionCode}__${train.directionLabel}`);
   const directionPanels = Array.from(directions.values())
-    .sort((left, right) => compareDirectionLabel(left.items[0].directionLabel, right.items[0].directionLabel))
+    .sort((left, right) => compareDirectionLabelForNetwork(network, left.items[0].directionLabel, right.items[0].directionLabel))
     .map((group) => renderDirectionPanel(group.items[0].directionLabel, group.items));
 
   return `
@@ -693,6 +693,18 @@ function compareDirectionLabel(left, right) {
     return (leftIndex >= 0 ? leftIndex : 999) - (rightIndex >= 0 ? rightIndex : 999);
   }
   return String(left).localeCompare(String(right), "ja");
+}
+
+function compareDirectionLabelForNetwork(network, left, right) {
+  if (network && network.id === "keisei") {
+    const keiseiOrder = ["下り", "上り"];
+    const leftIndex = keiseiOrder.indexOf(left);
+    const rightIndex = keiseiOrder.indexOf(right);
+    if (leftIndex >= 0 || rightIndex >= 0) {
+      return (leftIndex >= 0 ? leftIndex : 999) - (rightIndex >= 0 ? rightIndex : 999);
+    }
+  }
+  return compareDirectionLabel(left, right);
 }
 
 function statusCard(label, value, hint, isWide = false) {
