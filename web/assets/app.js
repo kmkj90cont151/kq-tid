@@ -185,6 +185,14 @@ function buildFallbackDetailKey(networkId, train) {
   return [networkId, train.lineId || "", train.trainNumber || ""].join(":");
 }
 
+function normalizePlatformValue(value) {
+  const text = String(value == null ? "" : value).trim();
+  if (!text || text === "0" || text === "-") {
+    return "";
+  }
+  return text;
+}
+
 function mergeTrainDetail(train, detail) {
   const merged = Object.assign({}, train);
 
@@ -195,7 +203,7 @@ function mergeTrainDetail(train, detail) {
     merged.destinationLabel = detail.destinationLabel;
   }
   if (detail.platform) {
-    merged.platform = detail.platform;
+    merged.detailPlatform = detail.platform;
   }
   if (detail.vehicleLabel) {
     merged.vehicleLabel = detail.vehicleLabel;
@@ -443,9 +451,10 @@ function renderPositionGroup(sample, trains) {
 }
 
 function renderTrainCard(train) {
+  const livePlatform = normalizePlatformValue(train.platform);
   const chips = [
     train.destinationLabel ? chip(train.destinationLabel, "default") : "",
-    train.platform ? chip(`${train.platform} 番線`, "default") : "",
+    livePlatform ? chip(`${livePlatform} 番線`, "default") : "",
     Number(train.delayMinutes || 0) > 0 ? chip(`${formatDelayMinutes(train.delayMinutes)} 分遅れ`, "delay") : "",
     train.ownerLabel ? chip(train.ownerLabel, "owner") : "",
     train.vehicleLabel ? chip(train.vehicleLabel, "default") : "",
