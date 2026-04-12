@@ -34,7 +34,7 @@ jobs:
           python-version: "3.12"
 
       - name: Configure Pages
-        uses: actions/configure-pages@v6
+        uses: actions/configure-pages@v5
 
       - name: Build static site
         run: python scripts/build_site.py --output site
