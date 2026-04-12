@@ -219,7 +219,7 @@
     KeiseiNakayama: "京成中山", KeiseiYawata: "京成八幡",
   };
 
-  const KEISEI_DIRECTION_LABELS = { "0": "下り", "1": "上り" };
+  const KEISEI_DIRECTION_LABELS = { "0": "上り", "1": "下り" };
   const MATSUDO_DIRECTION_LABELS = { "0": "下り", "1": "上り" };
 
   const LIVE_CACHE = new Map();

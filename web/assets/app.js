@@ -399,10 +399,10 @@ function renderListings() {
 }
 
 function renderLinePanel(network, lineLabel, trains) {
-  const directions = groupBy(trains, (train) => `${train.directionCode}__${train.directionLabel}`);
+  const directions = groupBy(trains, (train) => String(train.directionCode || ""));
   const directionPanels = Array.from(directions.values())
-    .sort((left, right) => compareDirectionLabelForNetwork(network, left.items[0].directionLabel, right.items[0].directionLabel))
-    .map((group) => renderDirectionPanel(network, group.items[0].directionLabel, group.items));
+    .sort((left, right) => compareDirectionLabelForNetwork(network, getDisplayDirectionLabel(left.items[0]), getDisplayDirectionLabel(right.items[0])))
+    .map((group) => renderDirectionPanel(network, getDisplayDirectionLabel(group.items[0]), group.items));
 
   return `
     <section class="line-panel" style="--accent:${escapeHtml(network.accentColor || "#333333")}">
@@ -451,6 +451,7 @@ function renderPositionGroup(sample, trains) {
 }
 
 function renderTrainCard(train) {
+  const displayDirectionLabel = getDisplayDirectionLabel(train);
   const livePlatform = normalizePlatformValue(train.platform);
   const chips = [
     train.destinationLabel ? chip(train.destinationLabel, "default") : "",
@@ -525,7 +526,7 @@ function renderTrainCard(train) {
           <span class="train-no">${escapeHtml(train.trainNumber || "(列番なし)")}</span>
           <span class="service-badge"${badgeStyle}>${escapeHtml(train.serviceTypeLabel || "不明")}</span>
         </div>
-        <div class="train-card__direction">${escapeHtml(train.directionLabel || "")}</div>
+        <div class="train-card__direction">${escapeHtml(displayDirectionLabel)}</div>
       </div>
       <div class="train-card__location">${escapeHtml(train.locationLabel || "")}</div>
       <div class="train-card__secondary">${escapeHtml([train.originLabel, train.destinationLabel].filter(Boolean).join(" → ") || "始発・行先情報なし")}</div>
@@ -668,6 +669,20 @@ function groupBy(items, keyFn) {
   return map;
 }
 
+function getDisplayDirectionLabel(train) {
+  const networkId = String((train && train.networkId) || "");
+  const directionCode = String((train && train.directionCode) || "");
+  if (networkId === "keisei") {
+    if (directionCode === "0") {
+      return "上り";
+    }
+    if (directionCode === "1") {
+      return "下り";
+    }
+  }
+  return String((train && train.directionLabel) || "");
+}
+
 function compareDirectionLabel(left, right) {
   const order = [
     "品川・泉岳寺方面",
@@ -710,9 +725,6 @@ function compareDirectionLabelForNetwork(network, left, right) {
 function comparePositionGroupForNetwork(network, directionLabel, left, right) {
   const leftOrder = Number(left.positionOrder || 0);
   const rightOrder = Number(right.positionOrder || 0);
-  if (network && network.id === "keisei" && directionLabel === "上り") {
-    return rightOrder - leftOrder;
-  }
   return leftOrder - rightOrder;
 }
 
