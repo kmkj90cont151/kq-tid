@@ -7,7 +7,17 @@ export default {
     }
 
     const url = new URL(request.url);
-    const target = url.searchParams.get("url") || "";
+    const target = url.searchParams.get("url") || url.searchParams.get("target") || "";
+    if (!target) {
+      return json(
+        {
+          ok: true,
+          message: "keikyu proxy is running",
+          usage: `${url.origin}/?url=${encodeURIComponent("https://app-kq.net/api/train")}`,
+        },
+        200,
+      );
+    }
     if (!target.startsWith("https://app-kq.net/api/")) {
       return json({ error: "forbidden" }, 403);
     }
