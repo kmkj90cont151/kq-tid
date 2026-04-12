@@ -7,7 +7,7 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
-APP_VERSION = "github-pages-1"
+APP_VERSION = "github-pages-multi-1"
 KEIKYU_API_ENDPOINT = "https://app-kq.net/api/train"
 KEIKYU_LOCATION_TIMETABLE_ENDPOINT = "https://app-kq.net/api/locationTimetable/"
 
