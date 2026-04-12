@@ -119,25 +119,28 @@
 
   const KEIKYU_STATION_SEQUENCES = {
     main: [
-      [1, "泉岳寺"], [2, "品川"], [3, "北品川"], [4, "新馬場"], [5, "青物横丁"], [6, "鮫洲"], [7, "立会川"], [8, "大森海岸"],
-      [9, "平和島"], [10, "大森町"], [11, "梅屋敷"], [18, "京急蒲田"], [19, "糀谷"], [20, "大鳥居"], [27, "京急川崎"],
-      [28, "六郷土手"], [29, "雑色"], [30, "京急鶴見"], [31, "花月総持寺"], [32, "生麦"], [33, "京急新子安"], [34, "子安"],
-      [35, "神奈川新町"], [36, "京急東神奈川"], [37, "神奈川"], [38, "横浜"], [39, "戸部"], [40, "日ノ出町"], [41, "黄金町"],
-      [42, "南太田"], [43, "井土ヶ谷"], [44, "弘明寺"], [45, "上大岡"], [46, "屏風浦"], [47, "杉田"], [48, "京急富岡"],
-      [49, "能見台"], [50, "金沢文庫"], [54, "金沢八景"], [55, "追浜"], [56, "京急田浦"], [57, "安針塚"], [58, "逸見"],
-      [59, "汐入"], [60, "横須賀中央"], [61, "県立大学"], [62, "堀ノ内"], [63, "京急大津"], [64, "馬堀海岸"], [65, "浦賀"],
+      [1, "品川"], [2, "北品川"], [3, "新馬場"], [4, "青物横丁"], [5, "鮫洲"], [6, "立会川"],
+      [7, "大森海岸"], [8, "平和島"], [9, "大森町"], [10, "梅屋敷"], [11, "京急蒲田"],
+      [18, "雑色"], [19, "六郷土手"], [20, "京急川崎"], [27, "八丁畷"], [28, "鶴見市場"],
+      [29, "京急鶴見"], [30, "花月総持寺"], [31, "生麦"], [32, "京急新子安"], [33, "子安"],
+      [34, "神奈川新町"], [35, "京急東神奈川"], [36, "神奈川"], [37, "横浜"], [38, "戸部"],
+      [39, "日ノ出町"], [40, "黄金町"], [41, "南太田"], [42, "井土ヶ谷"], [43, "弘明寺"],
+      [44, "上大岡"], [45, "屏風浦"], [46, "杉田"], [47, "京急富岡"], [48, "能見台"],
+      [49, "金沢文庫"], [50, "金沢八景"], [54, "追浜"], [55, "京急田浦"], [56, "安針塚"],
+      [57, "逸見"], [58, "汐入"], [59, "横須賀中央"], [60, "県立大学"], [61, "堀ノ内"],
+      [62, "京急大津"], [63, "馬堀海岸"], [64, "浦賀"],
     ],
     airport: [
-      [18, "京急蒲田"], [12, "糀谷"], [13, "大鳥居"], [14, "穴守稲荷"], [15, "天空橋"], [16, "羽田空港第3ターミナル"], [17, "羽田空港第1・第2ターミナル"],
+      [11, "京急蒲田"], [12, "糀谷"], [13, "大鳥居"], [14, "穴守稲荷"], [15, "天空橋"], [16, "羽田空港第3ターミナル"], [17, "羽田空港第1・第2ターミナル"],
     ],
     daishi: [
-      [27, "京急川崎"], [21, "港町"], [22, "鈴木町"], [23, "川崎大師"], [24, "東門前"], [25, "大師橋"], [26, "小島新田"],
+      [20, "京急川崎"], [21, "港町"], [22, "鈴木町"], [23, "川崎大師"], [24, "東門前"], [25, "大師橋"], [26, "小島新田"],
     ],
     zushi: [
-      [54, "金沢八景"], [51, "六浦"], [52, "神武寺"], [53, "逗子・葉山"],
+      [50, "金沢八景"], [51, "六浦"], [52, "神武寺"], [53, "逗子・葉山"],
     ],
     kurihama: [
-      [62, "堀ノ内"], [66, "新大津"], [67, "北久里浜"], [68, "京急久里浜"], [69, "YRP野比"], [70, "京急長沢"], [71, "津久井浜"], [72, "三浦海岸"], [73, "三崎口"],
+      [61, "堀ノ内"], [65, "新大津"], [66, "北久里浜"], [67, "京急久里浜"], [68, "YRP野比"], [69, "京急長沢"], [70, "津久井浜"], [71, "三浦海岸"], [72, "三崎口"],
     ],
   };
 
@@ -148,14 +151,14 @@
     E4011: { lineId: "main", kind: "station", stationNumber: 11, confidence: "medium" },
     E8050: { lineId: "main", kind: "section", anchor: 50, confidence: "medium" },
     N050: { lineId: "main", kind: "section", anchor: 50, confidence: "medium" },
-    S011: { lineId: "airport", kind: "section", anchor: 18, confidence: "medium" },
-    S020: { lineId: "daishi", kind: "section", anchor: 27, confidence: "medium" },
-    SD020: { lineId: "daishi", kind: "station", stationNumber: 27, confidence: "medium" },
-    SU020: { lineId: "daishi", kind: "station", stationNumber: 27, confidence: "medium" },
-    S050: { lineId: "zushi", kind: "section", anchor: 54, confidence: "medium" },
-    S061: { lineId: "main", kind: "section", anchor: 62, confidence: "medium" },
-    U061: { lineId: "kurihama", kind: "section", anchor: 62, confidence: "medium" },
-    EU065: { lineId: "kurihama", kind: "station", stationNumber: 62, label: "堀ノ内", confidence: "low" },
+    S011: { lineId: "airport", kind: "section", anchor: 11, confidence: "medium" },
+    S020: { lineId: "daishi", kind: "section", anchor: 20, confidence: "medium" },
+    SD020: { lineId: "daishi", kind: "station", stationNumber: 20, confidence: "medium" },
+    SU020: { lineId: "daishi", kind: "station", stationNumber: 20, confidence: "medium" },
+    S050: { lineId: "zushi", kind: "section", anchor: 50, confidence: "medium" },
+    S061: { lineId: "main", kind: "section", anchor: 61, confidence: "medium" },
+    U061: { lineId: "kurihama", kind: "section", anchor: 61, confidence: "medium" },
+    EU065: { lineId: "kurihama", kind: "station", stationNumber: 61, label: "堀ノ内", confidence: "low" },
   };
 
   const KEIKYU_TRAIN_KIND_META = {
@@ -494,7 +497,7 @@
     if (stationNumber >= 51 && stationNumber <= 53) {
       return "zushi";
     }
-    if (stationNumber >= 66 && stationNumber <= 73) {
+    if (stationNumber >= 65 && stationNumber <= 72) {
       return "kurihama";
     }
     return "main";
@@ -974,8 +977,19 @@
     });
   }
 
+  function normalizeRailwayName(value) {
+    return stringOrEmpty(value)
+      .replace(/空港第２ビル/g, "空港第2ビル")
+      .replace(/千葉ﾆｭｰﾀｳﾝ中央/g, "千葉ニュータウン中央")
+      .replace(/\s+/g, "");
+  }
+
   function normalizeDisplayRailwayName(value) {
-    return stringOrEmpty(value).trim();
+    return normalizeRailwayName(value);
+  }
+
+  function denormalizeRailwayName(value) {
+    return stringOrEmpty(value);
   }
 
   async function getKeiseiConfigBundle() {
@@ -1091,7 +1105,12 @@
   }
 
   function extractDigits(value) {
-    return stringOrEmpty(value).replace(/[^0-9]/g, "");
+    const match = stringOrEmpty(value).match(/(\d+)$/);
+    if (!match) {
+      return "";
+    }
+    const number = Number(match[1]);
+    return Number.isFinite(number) ? String(number) : match[1];
   }
 
   function lookupKeiseiStationName(code, config, isMatsudo) {
@@ -1113,25 +1132,58 @@
   }
 
   function guessKeiseiLineFromDestinationCode(code) {
-    const value = Number(code || 0);
+    const value = Number(code);
+    if (!value) {
+      return "";
+    }
     if ((value >= 47 && value <= 51) || (value >= 90 && value <= 95)) {
       return "4";
     }
     if (value === 52 || value === 53) {
       return "5";
     }
+    if ((value >= 54 && value <= 84) || value === 61 || value === 62) {
+      return "6";
+    }
+    if (value === 46 || value === 130) {
+      return "2";
+    }
+    if ((value >= 140 && value <= 149) || (value >= 211 && value <= 216)) {
+      return "3";
+    }
+    if ((value >= 131 && value <= 136) || (value >= 221 && value <= 237)) {
+      return "7";
+    }
+    return "1";
+  }
+
+  function guessKeiseiLineFromSr(sr) {
+    if (sr === "8") {
+      return "3";
+    }
+    if (sr === "4") {
+      return "4";
+    }
+    if (sr === "6") {
+      return "1";
+    }
     return "";
+  }
+
+  function isKeiseiSubwayThrough(destinationCode) {
+    const value = Number(destinationCode);
+    return (value >= 90 && value <= 121) || value === 47;
   }
 
   function getKeiseiLineCandidates(stationLabel, config) {
     if (!stationLabel) {
       return [];
     }
-    return uniqueStrings((config.coordinateByName[normalizeDisplayRailwayName(stationLabel)] || []).map((item) => stringOrEmpty(item.rs)).filter(Boolean));
+    return uniqueStrings((config.coordinateByName[normalizeRailwayName(stationLabel)] || []).map((item) => stringOrEmpty(item.rs)).filter(Boolean));
   }
 
   function pickKeiseiCoordinate(stationLabel, lineCode, config) {
-    const items = config.coordinateByName[normalizeDisplayRailwayName(stationLabel)] || [];
+    const items = config.coordinateByName[normalizeRailwayName(stationLabel)] || [];
     if (!items.length) {
       return null;
     }
@@ -1143,7 +1195,7 @@
       return "";
     }
     const stations = config.lineStations[stringOrEmpty(lineCode)] || [];
-    const normalized = normalizeDisplayRailwayName(stationLabel);
+    const normalized = normalizeRailwayName(stationLabel);
     const index = stations.findIndex((row) => row.name === normalized);
     if (index < 0) {
       return `${stationLabel}付近`;
@@ -1152,10 +1204,10 @@
     if (!neighbor) {
       return `${stationLabel}付近`;
     }
-    return `${neighbor.name} - ${stationLabel}間`;
+    return `${denormalizeRailwayName(neighbor.name)} - ${stationLabel}間`;
   }
 
-  function inferKeiseiLineCode(record, stationLabel, config) {
+  function inferKeiseiLineCode(record, stationLabel, config, stationCode) {
     const candidates = getKeiseiLineCandidates(stationLabel, config);
     if (candidates.length === 1) {
       return candidates[0];
@@ -1166,31 +1218,59 @@
       return destinationLine;
     }
 
+    const srHint = guessKeiseiLineFromSr(record.raw.sr);
+    if (srHint && candidates.includes(srHint)) {
+      return srHint;
+    }
+
     if (stationLabel === "青砥") {
-      return guessKeiseiLineFromDestinationCode(record.raw.ik) === "4" ? "4" : "1";
+      return isKeiseiSubwayThrough(record.raw.ik) ? "4" : "1";
     }
 
     if (stationLabel === "京成高砂") {
       if (destinationLine === "5") {
         return "5";
       }
-      if (destinationLine === "4" || ["17", "18"].includes(record.raw.sy)) {
-        return "4";
-      }
       if (destinationLine === "3") {
+        return "3";
+      }
+      if (record.raw.sy === "17" || record.raw.sy === "18") {
         return "3";
       }
       return "1";
     }
 
-    return candidates[0] || "";
+    if (stationLabel === "京成津田沼") {
+      if (destinationLine === "7") {
+        return "7";
+      }
+      if (destinationLine === "6") {
+        return "6";
+      }
+      return "1";
+    }
+
+    if (stationLabel === "京成成田") {
+      return destinationLine === "2" ? "2" : "1";
+    }
+
+    if (candidates.length > 0) {
+      return candidates[0];
+    }
+    if (destinationLine) {
+      return destinationLine;
+    }
+    if (stationCode && Number(stationCode) >= 131) {
+      return "7";
+    }
+    return "1";
   }
 
   function resolveKeiseiPosition(record, config, forcedLineCode = "") {
     const stationCode = extractDigits(record.positionCode || "");
     const stationLabel = lookupKeiseiStationName(stationCode, config, forcedLineCode === "7");
     const locationType = record.positionBucket === "TS" ? "station" : "section";
-    const lineCode = forcedLineCode || inferKeiseiLineCode(record, stationLabel, config);
+    const lineCode = forcedLineCode || inferKeiseiLineCode(record, stationLabel, config, stationCode);
     const lineLabel = normalizeDisplayRailwayName((config.rosenByCode[lineCode] || {}).name) || "路線不明";
     const coord = pickKeiseiCoordinate(stationLabel, lineCode, config);
     const confidence = stationLabel && coord ? "high" : stationLabel ? "medium" : "low";
