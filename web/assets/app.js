@@ -399,7 +399,7 @@ function renderListings() {
 }
 
 function renderLinePanel(network, lineLabel, trains) {
-  const directions = groupBy(trains, (train) => String(train.directionCode || ""));
+  const directions = groupBy(trains, (train) => getDirectionGroupKey(network, train));
   const directionPanels = Array.from(directions.values())
     .sort((left, right) => compareDirectionLabelForNetwork(network, getDisplayDirectionLabel(left.items[0]), getDisplayDirectionLabel(right.items[0])))
     .map((group) => renderDirectionPanel(network, getDisplayDirectionLabel(group.items[0]), group.items));
@@ -452,6 +452,7 @@ function renderPositionGroup(sample, trains) {
 
 function renderTrainCard(train) {
   const displayDirectionLabel = getDisplayDirectionLabel(train);
+  const directionCode = getTrainDirectionCode(train);
   const livePlatform = normalizePlatformValue(train.platform);
   const chips = [
     train.destinationLabel ? chip(train.destinationLabel, "default") : "",
@@ -462,7 +463,7 @@ function renderTrainCard(train) {
     Array.isArray(train.sourceTags) ? train.sourceTags.map((tag) => chip(labelSourceTag(tag), "source")).join("") : "",
     train.researchCandidate ? chip("要確認", "research") : "",
     appState.filters.showRaw ? chip(`種別:${train.serviceTypeCode || "-"}`, "raw") : "",
-    appState.filters.showRaw ? chip(`方向:${train.directionCode || "-"}`, "raw") : "",
+    appState.filters.showRaw ? chip(`方向:${directionCode || "-"}`, "raw") : "",
   ].filter(Boolean).join("");
 
   const detailRows = Array.isArray(train.detailRows) ? train.detailRows : [];
@@ -669,9 +670,27 @@ function groupBy(items, keyFn) {
   return map;
 }
 
+function getTrainDirectionCode(train) {
+  if (!train || !Object.prototype.hasOwnProperty.call(train, "directionCode")) {
+    return "";
+  }
+  return String(train.directionCode == null ? "" : train.directionCode).trim();
+}
+
+function getDirectionGroupKey(network, train) {
+  if (network && network.id === "keisei") {
+    const label = getDisplayDirectionLabel(train);
+    if (label === "上り" || label === "下り") {
+      return label;
+    }
+  }
+
+  return getTrainDirectionCode(train) || getDisplayDirectionLabel(train) || "";
+}
+
 function getDisplayDirectionLabel(train) {
-  const networkId = String((train && train.networkId) || "");
-  const directionCode = String((train && train.directionCode) || "");
+  const networkId = String((train && train.networkId) || "").trim();
+  const directionCode = getTrainDirectionCode(train);
   if (networkId === "keisei") {
     if (directionCode === "0") {
       return "上り";

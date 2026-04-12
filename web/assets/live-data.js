@@ -1343,7 +1343,7 @@
         stationLabel: lookupKeiseiStationName(stationCode, config, false),
         arrivalTime: normalizeKeiseiTime(row.tt),
         departureTime: normalizeKeiseiTime(row.ht),
-        stopType: stringOrEmpty(row.pa) === "1" ? "通過" : "停車",
+        stopType: stringOrEmpty(row.pa) === "1" ? "--" : "停車",
       });
     });
     return rows;
@@ -1366,6 +1366,7 @@
     const destinationEntry = config.ikisakiByCode[record.raw.ik] || null;
     const serviceTypeLabel = stringOrEmpty(serviceEntry && serviceEntry.name) || "不明";
     const destinationLabel = stringOrEmpty(destinationEntry && destinationEntry.name);
+    const directionCode = stringOrEmpty(record.raw.hk).trim();
     const palette = pickPalette(serviceTypeLabel);
     const trainNumber = record.trainNumber || "(列番なし)";
 
@@ -1374,8 +1375,8 @@
       trainNumber,
       lineId: positionInfo.lineCode || "1",
       lineLabel: positionInfo.lineLabel || "路線不明",
-      directionCode: record.raw.hk,
-      directionLabel: KEISEI_DIRECTION_LABELS[record.raw.hk] || `方向コード ${record.raw.hk || "-"}`,
+      directionCode,
+      directionLabel: KEISEI_DIRECTION_LABELS[directionCode] || `方向コード ${directionCode || "-"}`,
       positionCode: record.positionCode || "",
       locationLabel: positionInfo.locationLabel,
       locationType: positionInfo.locationType,
