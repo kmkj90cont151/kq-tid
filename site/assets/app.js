@@ -680,7 +680,7 @@ function getTrainDirectionCode(train) {
   return String(train.directionCode == null ? "" : train.directionCode).trim();
 }
 
-function normalizeKeiseiDirectionCode(value) {
+function normalizeBinaryDirectionCode(value) {
   const code = String(value == null ? "" : value).trim();
   if (code === "0") {
     return "0";
@@ -691,26 +691,80 @@ function normalizeKeiseiDirectionCode(value) {
   return code;
 }
 
+function getBinaryDirectionLabel(directionCode) {
+  if (directionCode === "0") {
+    return "上り";
+  }
+  if (directionCode === "1") {
+    return "下り";
+  }
+  return "";
+}
+
+function resolveKeiseiServiceBadge(train) {
+  const code = String(train && train.serviceTypeCode == null ? "" : train.serviceTypeCode || "").trim();
+  const label = String((train && train.serviceTypeLabel) || "").trim();
+
+  if (["0", "1", "2", "16"].includes(code) || /(スカイライナー|モーニングライナー|臨時ライナー|イブニングライナー|シティライナー)/.test(label)) {
+    return { color: "#0b3b8c", textColor: "#ffffff" };
+  }
+  if (["17", "18"].includes(code) || label.includes("アクセス特急")) {
+    return { color: "#f39800", textColor: "#1f2937" };
+  }
+  if (code === "3" || label.includes("通勤特急")) {
+    return { color: "#69c7f0", textColor: "#083344" };
+  }
+  if (["13", "14", "15"].includes(code) || label.includes("快速特急")) {
+    return { color: "#009944", textColor: "#ffffff" };
+  }
+  if (code === "4" || label === "特急" || /(^|[^通])特急/.test(label)) {
+    return { color: "#d23431", textColor: "#ffffff" };
+  }
+  if (["10", "11"].includes(code) || label === "快速") {
+    return { color: "#ff5fa2", textColor: "#ffffff" };
+  }
+  if (code === "6" || label === "普通") {
+    return { color: "#2f2f2f", textColor: "#ffffff" };
+  }
+  return {
+    color: String((train && train.serviceColor) || "").trim(),
+    textColor: String((train && train.serviceTextColor) || "").trim() || "#ffffff",
+  };
+}
+
 function normalizeTrainForDisplay(networkId, train) {
-  if (!train || networkId !== "keisei") {
+  if (!train) {
     return train;
   }
 
-  const directionCode = normalizeKeiseiDirectionCode(getTrainDirectionCode(train));
-  const normalized = Object.assign({}, train, { directionCode });
+  const normalized = Object.assign({}, train);
 
-  if (directionCode === "0") {
-    normalized.directionLabel = "上り";
-  } else if (directionCode === "1") {
-    normalized.directionLabel = "下り";
+  if (networkId === "keisei" || networkId === "matsudo") {
+    const directionCode = normalizeBinaryDirectionCode(getTrainDirectionCode(train));
+    normalized.directionCode = directionCode;
+    const directionLabel = getBinaryDirectionLabel(directionCode);
+    if (directionLabel) {
+      normalized.directionLabel = directionLabel;
+    }
+  }
+
+  if (networkId === "keisei") {
+    const badge = resolveKeiseiServiceBadge(normalized);
+    if (badge.color) {
+      normalized.serviceColor = badge.color;
+      normalized.serviceTextColor = badge.textColor;
+    }
+  } else if (networkId === "matsudo" && String(normalized.serviceTypeLabel || "").trim() === "普通") {
+    normalized.serviceColor = "#2f2f2f";
+    normalized.serviceTextColor = "#ffffff";
   }
 
   return normalized;
 }
 
 function getDirectionGroupKey(network, train) {
-  if (network && network.id === "keisei") {
-    const directionCode = normalizeKeiseiDirectionCode(getTrainDirectionCode(train));
+  if (network && (network.id === "keisei" || network.id === "matsudo")) {
+    const directionCode = normalizeBinaryDirectionCode(getTrainDirectionCode(train));
     if (directionCode === "0" || directionCode === "1") {
       return directionCode;
     }
@@ -721,15 +775,13 @@ function getDirectionGroupKey(network, train) {
 
 function getDisplayDirectionLabel(train) {
   const networkId = String((train && train.networkId) || "").trim();
-  const directionCode = networkId === "keisei"
-    ? normalizeKeiseiDirectionCode(getTrainDirectionCode(train))
+  const directionCode = networkId === "keisei" || networkId === "matsudo"
+    ? normalizeBinaryDirectionCode(getTrainDirectionCode(train))
     : getTrainDirectionCode(train);
-  if (networkId === "keisei") {
-    if (directionCode === "0") {
-      return "上り";
-    }
-    if (directionCode === "1") {
-      return "下り";
+  if (networkId === "keisei" || networkId === "matsudo") {
+    const directionLabel = getBinaryDirectionLabel(directionCode);
+    if (directionLabel) {
+      return directionLabel;
     }
   }
   return String((train && train.directionLabel) || "");
@@ -772,7 +824,7 @@ function compareDirectionLabelForNetwork(network, left, right) {
     }
   }
   if (network && network.id === "matsudo") {
-    const matsudoOrder = ["下り", "上り"];
+    const matsudoOrder = ["上り", "下り"];
     const leftIndex = matsudoOrder.indexOf(left);
     const rightIndex = matsudoOrder.indexOf(right);
     if (leftIndex >= 0 || rightIndex >= 0) {

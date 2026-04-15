@@ -3,13 +3,263 @@
   "label": "京成松戸線",
   "description": "松戸線の在線情報とえるサイト由来の補助メタを表示します。",
   "accentColor": "#13866f",
-  "status": "error",
-  "updatedAt": "",
-  "trains": [],
-  "warnings": [
-    "データ取得に失敗しました。"
+  "status": "ok",
+  "updatedAt": "2026-04-11T22:49:51+00:00",
+  "trains": [
+    {
+      "trainNumber": "1RT",
+      "lineId": "7",
+      "lineLabel": "松戸線",
+      "directionCode": "1",
+      "directionLabel": "上り",
+      "positionCode": "E136",
+      "locationLabel": "松戸",
+      "locationType": "station",
+      "positionOrder": 156.0,
+      "confidence": "high",
+      "serviceTypeCode": "",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "",
+      "destinationLabel": "京成津田沼",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "京成",
+      "vehicleLabel": "運用 1RT",
+      "sourceTags": [
+        "live",
+        "enrichment"
+      ],
+      "researchCandidate": false,
+      "note": "列車番号 133 / block 01H",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "2RT",
+      "lineId": "7",
+      "lineLabel": "松戸線",
+      "directionCode": "1",
+      "directionLabel": "上り",
+      "positionCode": "E136",
+      "locationLabel": "松戸",
+      "locationType": "station",
+      "positionOrder": 156.0,
+      "confidence": "high",
+      "serviceTypeCode": "",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "",
+      "destinationLabel": "京成津田沼",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "京成",
+      "vehicleLabel": "運用 2RT",
+      "sourceTags": [
+        "live",
+        "enrichment"
+      ],
+      "researchCandidate": false,
+      "note": "列車番号 131 / block 01H",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "172T",
+      "lineId": "7",
+      "lineLabel": "松戸線",
+      "directionCode": "0",
+      "directionLabel": "下り",
+      "positionCode": "U225",
+      "locationLabel": "元山 - 五香間",
+      "locationType": "section",
+      "positionOrder": 1848.5,
+      "confidence": "high",
+      "serviceTypeCode": "",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "",
+      "destinationLabel": "松戸",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "京成",
+      "vehicleLabel": "運用 172T",
+      "sourceTags": [
+        "live",
+        "enrichment"
+      ],
+      "researchCandidate": false,
+      "note": "列車番号 132 / block 02H",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "177T",
+      "lineId": "7",
+      "lineLabel": "松戸線",
+      "directionCode": "1",
+      "directionLabel": "上り",
+      "positionCode": "D226",
+      "locationLabel": "くぬぎ山 - 元山間",
+      "locationType": "section",
+      "positionOrder": 2130.5,
+      "confidence": "high",
+      "serviceTypeCode": "",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "",
+      "destinationLabel": "京成津田沼",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "京成",
+      "vehicleLabel": "運用 177T",
+      "sourceTags": [
+        "live",
+        "enrichment"
+      ],
+      "researchCandidate": false,
+      "note": "列車番号 129 / block 02H",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "91T",
+      "lineId": "7",
+      "lineLabel": "松戸線",
+      "directionCode": "1",
+      "directionLabel": "上り",
+      "positionCode": "E230",
+      "locationLabel": "二和向台",
+      "locationType": "station",
+      "positionOrder": 3822.0,
+      "confidence": "high",
+      "serviceTypeCode": "",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "",
+      "destinationLabel": "京成津田沼",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "京成",
+      "vehicleLabel": "運用 91T",
+      "sourceTags": [
+        "live",
+        "enrichment"
+      ],
+      "researchCandidate": false,
+      "note": "列車番号 127 / block 04H",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "80T",
+      "lineId": "7",
+      "lineLabel": "松戸線",
+      "directionCode": "0",
+      "directionLabel": "下り",
+      "positionCode": "E231",
+      "locationLabel": "三咲",
+      "locationType": "station",
+      "positionOrder": 4104.0,
+      "confidence": "high",
+      "serviceTypeCode": "",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "",
+      "destinationLabel": "松戸",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "京成",
+      "vehicleLabel": "運用 80T",
+      "sourceTags": [
+        "live",
+        "enrichment"
+      ],
+      "researchCandidate": false,
+      "note": "列車番号 134 / block 04H",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "1RT",
+      "lineId": "7",
+      "lineLabel": "松戸線",
+      "directionCode": "0",
+      "directionLabel": "下り",
+      "positionCode": "E131",
+      "locationLabel": "新津田沼",
+      "locationType": "station",
+      "positionOrder": 6360.0,
+      "confidence": "high",
+      "serviceTypeCode": "",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "",
+      "destinationLabel": "松戸",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "京成",
+      "vehicleLabel": "運用 1RT",
+      "sourceTags": [
+        "live",
+        "enrichment"
+      ],
+      "researchCandidate": false,
+      "note": "列車番号 136 / block 05H",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "4LBT",
+      "lineId": "7",
+      "lineLabel": "松戸線",
+      "directionCode": "1",
+      "directionLabel": "上り",
+      "positionCode": "E131",
+      "locationLabel": "新津田沼",
+      "locationType": "station",
+      "positionOrder": 6360.0,
+      "confidence": "high",
+      "serviceTypeCode": "",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "",
+      "destinationLabel": "京成津田沼",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "京成",
+      "vehicleLabel": "運用 4LBT",
+      "sourceTags": [
+        "live",
+        "enrichment"
+      ],
+      "researchCandidate": false,
+      "note": "列車番号 125 / block 05H",
+      "detailRows": [],
+      "detailSummary": ""
+    }
   ],
-  "error": "<urlopen error [WinError 10061] 対象のコンピューターによって拒否されたため、接続できませんでした。>",
+  "warnings": [
+    "松戸線は matsudo_id.json と座標辞書を使って位置を補完します。",
+    "列車番号よりも orbitnumber を優先表示し、運用番号として追いやすくしています。"
+  ],
+  "error": "",
   "sourceUrls": [
     {
       "label": "松戸線在線情報",
@@ -24,6 +274,136 @@
       "url": "https://www.elesite-next.com/train_location"
     }
   ],
-  "meta": {},
+  "meta": {
+    "elesite": {
+      "enabled": true,
+      "routeCode": "keisei_matsudo",
+      "directionInfo": null,
+      "alerts": [],
+      "alertCount": 0,
+      "leftTerminal": "",
+      "rightTerminal": "",
+      "originSide": "right",
+      "formationCount": 0,
+      "formationLabels": [],
+      "diaPatternNames": [],
+      "todayDiaLabel": "",
+      "userRank": 0,
+      "shoteiList": [],
+      "todayDiaPattern": null,
+      "currentHenseiCount": 0,
+      "currentHenseiList": [],
+      "currentHenseiPreview": [],
+      "routeMap": {
+        "title": "京成松戸線 路線補助",
+        "leftTerminal": "",
+        "rightTerminal": "",
+        "formationCount": 0,
+        "diaPatternCount": 0,
+        "todayPattern": ""
+      },
+      "error": "<urlopen error [WinError 10061] 対象のコンピューターによって拒否されたため、接続できませんでした。>"
+    },
+    "matsudoStatus": {
+      "st": "0"
+    },
+    "positionMappingMode": "matsudo_id + 座標辞書",
+    "detailMode": "詳細情報なし",
+    "routeMapMode": "位置順レーン",
+    "detailCount": 0
+  },
+  "routeMap": {
+    "title": "京成松戸線 路線図モード",
+    "description": "positionOrder と在線位置ラベルをもとに組み立てた簡易路線図です。",
+    "updatedAt": "2026-04-11T22:49:51+00:00",
+    "stations": [
+      {
+        "id": "7:E136:156.0",
+        "label": "松戸",
+        "positionCode": "E136",
+        "positionOrder": 156.0,
+        "lineId": "7",
+        "lineLabel": "松戸線"
+      },
+      {
+        "id": "7:U225:1848.5",
+        "label": "元山 - 五香間",
+        "positionCode": "U225",
+        "positionOrder": 1848.5,
+        "lineId": "7",
+        "lineLabel": "松戸線"
+      },
+      {
+        "id": "7:D226:2130.5",
+        "label": "くぬぎ山 - 元山間",
+        "positionCode": "D226",
+        "positionOrder": 2130.5,
+        "lineId": "7",
+        "lineLabel": "松戸線"
+      },
+      {
+        "id": "7:E230:3822.0",
+        "label": "二和向台",
+        "positionCode": "E230",
+        "positionOrder": 3822.0,
+        "lineId": "7",
+        "lineLabel": "松戸線"
+      },
+      {
+        "id": "7:E231:4104.0",
+        "label": "三咲",
+        "positionCode": "E231",
+        "positionOrder": 4104.0,
+        "lineId": "7",
+        "lineLabel": "松戸線"
+      },
+      {
+        "id": "7:E131:6360.0",
+        "label": "新津田沼",
+        "positionCode": "E131",
+        "positionOrder": 6360.0,
+        "lineId": "7",
+        "lineLabel": "松戸線"
+      }
+    ],
+    "lines": [
+      {
+        "id": "7",
+        "label": "松戸線",
+        "nodes": [
+          "7:E136:156.0",
+          "7:U225:1848.5",
+          "7:D226:2130.5",
+          "7:E230:3822.0",
+          "7:E231:4104.0",
+          "7:E131:6360.0"
+        ],
+        "stationCount": 6
+      }
+    ],
+    "directions": [
+      {
+        "id": "1",
+        "label": "上り",
+        "nodes": [
+          "7:E136:156.0",
+          "7:D226:2130.5",
+          "7:E230:3822.0",
+          "7:E131:6360.0"
+        ],
+        "trainCount": 5
+      },
+      {
+        "id": "0",
+        "label": "下り",
+        "nodes": [
+          "7:U225:1848.5",
+          "7:E231:4104.0",
+          "7:E131:6360.0"
+        ],
+        "trainCount": 3
+      }
+    ]
+  },
   "loaded": true
 }

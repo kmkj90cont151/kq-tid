@@ -237,7 +237,7 @@
   };
 
   const KEISEI_DIRECTION_LABELS = { "0": "上り", "1": "下り" };
-  const MATSUDO_DIRECTION_LABELS = { "0": "下り", "1": "上り" };
+  const MATSUDO_DIRECTION_LABELS = { "0": "上り", "1": "下り" };
 
   const LIVE_CACHE = new Map();
 
@@ -496,27 +496,29 @@
     return SERVICE_PALETTE[classifyServiceTone(label)] || SERVICE_PALETTE.unknown;
   }
 
-  function pickKeiseiPalette(label) {
+  function pickKeiseiPalette(serviceTypeCode, label) {
+    const code = stringOrEmpty(serviceTypeCode).trim();
     const text = stringOrEmpty(label);
-    if (["スカイライナー", "モーニングライナー", "臨時ライナー", "イブニングライナー"].some((token) => text.includes(token))) {
+
+    if (["0", "1", "2", "16"].includes(code) || ["スカイライナー", "モーニングライナー", "臨時ライナー", "イブニングライナー", "シティライナー"].some((token) => text.includes(token))) {
       return { color: "#0b3b8c", textColor: "#ffffff" };
     }
-    if (text.includes("アクセス特急")) {
+    if (["17", "18"].includes(code) || text.includes("アクセス特急")) {
       return { color: "#f39800", textColor: "#111111" };
     }
-    if (text.includes("通勤特急")) {
+    if (code === "3" || text.includes("通勤特急")) {
       return { color: "#69c7f0", textColor: "#0b2942" };
     }
-    if (text.includes("快速特急")) {
+    if (["13", "14", "15"].includes(code) || text.includes("快速特急")) {
       return { color: "#009944", textColor: "#ffffff" };
     }
-    if (text.includes("特急")) {
+    if (code === "4" || text.includes("特急")) {
       return { color: "#d23431", textColor: "#ffffff" };
     }
-    if (text.includes("快速")) {
+    if (["10", "11"].includes(code) || text.includes("快速")) {
       return { color: "#ff5fa2", textColor: "#ffffff" };
     }
-    if (text.includes("普通")) {
+    if (code === "6" || text.includes("普通")) {
       return { color: "#2f2f2f", textColor: "#ffffff" };
     }
     return pickPalette(label);
@@ -1516,7 +1518,7 @@
     const directionCode = normalizeKeiseiDirectionCode(record.raw.hk);
     const carCount = toNumber(record.raw.sr, 0);
     const platform = stringOrEmpty(record.raw.bs).trim();
-    const palette = pickKeiseiPalette(serviceTypeLabel);
+    const palette = pickKeiseiPalette(record.raw.sy, serviceTypeLabel);
     const trainNumber = record.trainNumber || "(列番なし)";
 
     return {

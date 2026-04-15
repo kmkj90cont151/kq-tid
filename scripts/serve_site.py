@@ -69,11 +69,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="site/ をローカル配信し、京急API用の簡易プロキシも提供します。")
     parser.add_argument("--port", type=int, default=8000, help="待受ポート")
     parser.add_argument("--skip-build", action="store_true", help="既存の site/ をそのまま配信します。")
+    parser.add_argument("--fixtures-dir", default="", help="ローカル fixture のディレクトリ")
     args = parser.parse_args()
 
     site_dir = ROOT / "site"
     if not args.skip_build:
-        build_site(site_dir)
+        fixtures_dir = Path(args.fixtures_dir).resolve() if args.fixtures_dir else None
+        build_site(site_dir, fixtures_dir)
 
     handler = functools.partial(LocalSiteHandler, directory=str(site_dir))
     server = ThreadingHTTPServer(("127.0.0.1", args.port), handler)

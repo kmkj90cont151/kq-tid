@@ -1,7 +1,7 @@
 {
   "appName": "私鉄在線情報ビューア",
   "appVersion": "github-pages-multi-1",
-  "buildTimestamp": "2026-04-15T00:56:13.856360+00:00",
+  "buildTimestamp": "2026-04-15T01:19:57.314656+00:00",
   "publishTarget": "github-pages",
   "refreshPolicy": "GitHub Actions で定期ビルド",
   "networks": [
@@ -34,8 +34,8 @@
       "label": "都営浅草線",
       "description": "ODPT の在線データと境界駅時刻表を組み合わせて表示します。",
       "accentColor": "#cb8c15",
-      "updatedAt": "",
-      "trainCount": 0,
+      "updatedAt": "2026-04-11T21:55:59+09:00",
+      "trainCount": 12,
       "detailCount": 0,
       "dataUrl": "data/networks/toei.json",
       "sourceUrls": [
@@ -62,9 +62,9 @@
       "label": "京成線",
       "description": "京成の在線情報、列番別時刻表、えるサイトの路線メタをまとめて表示します。",
       "accentColor": "#0b5bd3",
-      "updatedAt": "",
-      "trainCount": 0,
-      "detailCount": 0,
+      "updatedAt": "2026-04-11T21:57:06+00:00",
+      "trainCount": 53,
+      "detailCount": 1,
       "dataUrl": "data/networks/keisei.json",
       "sourceUrls": [
         {
@@ -86,8 +86,8 @@
       "label": "京成松戸線",
       "description": "松戸線の在線情報とえるサイト由来の補助メタを表示します。",
       "accentColor": "#13866f",
-      "updatedAt": "",
-      "trainCount": 0,
+      "updatedAt": "2026-04-11T22:49:51+00:00",
+      "trainCount": 8,
       "detailCount": 0,
       "dataUrl": "data/networks/matsudo.json",
       "sourceUrls": [
@@ -107,11 +107,11 @@
     }
   ],
   "summary": {
-    "totalTrains": 0,
-    "delayedTrains": 0,
-    "researchTrains": 0,
-    "healthyNetworks": 0,
-    "loadedNetworks": 0,
+    "totalTrains": 73,
+    "delayedTrains": 9,
+    "researchTrains": 56,
+    "healthyNetworks": 3,
+    "loadedNetworks": 3,
     "totalNetworks": 4
   },
   "notes": [

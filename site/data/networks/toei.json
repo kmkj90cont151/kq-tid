@@ -3,13 +3,375 @@
   "label": "都営浅草線",
   "description": "ODPT の在線データと境界駅時刻表を組み合わせて表示します。",
   "accentColor": "#cb8c15",
-  "status": "error",
-  "updatedAt": "",
-  "trains": [],
-  "warnings": [
-    "データ取得に失敗しました。"
+  "status": "ok",
+  "updatedAt": "2026-04-11T21:55:59+09:00",
+  "trains": [
+    {
+      "trainNumber": "2153K",
+      "lineId": "asakusa",
+      "lineLabel": "都営浅草線",
+      "directionCode": "RailDirection:Northbound",
+      "directionLabel": "Rail Direction:Northbound",
+      "positionCode": "odpt.Station:Toei.Asakusa.NishiMagome",
+      "locationLabel": "西馬込",
+      "locationType": "station",
+      "positionOrder": 0,
+      "confidence": "medium",
+      "serviceTypeCode": "Rapid",
+      "serviceTypeLabel": "快速",
+      "serviceTone": "express",
+      "serviceColor": "#1358b8",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "西馬込",
+      "destinationLabel": "Keisei Narita",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "Operator:Keisei",
+      "vehicleLabel": "",
+      "sourceTags": [
+        "live"
+      ],
+      "researchCandidate": true,
+      "note": "",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "2026T",
+      "lineId": "asakusa",
+      "lineLabel": "都営浅草線",
+      "directionCode": "RailDirection:Southbound",
+      "directionLabel": "Rail Direction:Southbound",
+      "positionCode": "odpt.Station:Toei.Asakusa.Nakanobu -> odpt.Station:Toei.Asakusa.Magome",
+      "locationLabel": "中延",
+      "locationType": "station",
+      "positionOrder": 2,
+      "confidence": "high",
+      "serviceTypeCode": "Local",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "印旛日本医大",
+      "destinationLabel": "西馬込",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "Operator:Toei",
+      "vehicleLabel": "",
+      "sourceTags": [
+        "live"
+      ],
+      "researchCandidate": false,
+      "note": "",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "2121T",
+      "lineId": "asakusa",
+      "lineLabel": "都営浅草線",
+      "directionCode": "RailDirection:Northbound",
+      "directionLabel": "Rail Direction:Northbound",
+      "positionCode": "odpt.Station:Toei.Asakusa.Togoshi -> odpt.Station:Toei.Asakusa.Gotanda",
+      "locationLabel": "戸越",
+      "locationType": "station",
+      "positionOrder": 3,
+      "confidence": "high",
+      "serviceTypeCode": "Local",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "西馬込",
+      "destinationLabel": "泉岳寺",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "Operator:Toei",
+      "vehicleLabel": "",
+      "sourceTags": [
+        "live"
+      ],
+      "researchCandidate": false,
+      "note": "",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "2151H",
+      "lineId": "asakusa",
+      "lineLabel": "都営浅草線",
+      "directionCode": "RailDirection:Northbound",
+      "directionLabel": "Rail Direction:Northbound",
+      "positionCode": "odpt.Station:Toei.Asakusa.Sengakuji",
+      "locationLabel": "泉岳寺",
+      "locationType": "station",
+      "positionOrder": 6,
+      "confidence": "medium",
+      "serviceTypeCode": "Local",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "西馬込",
+      "destinationLabel": "京成高砂",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "Operator:Keikyu",
+      "vehicleLabel": "",
+      "sourceTags": [
+        "live"
+      ],
+      "researchCandidate": true,
+      "note": "",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "2102T",
+      "lineId": "asakusa",
+      "lineLabel": "都営浅草線",
+      "directionCode": "RailDirection:Southbound",
+      "directionLabel": "Rail Direction:Southbound",
+      "positionCode": "odpt.Station:Toei.Asakusa.Sengakuji",
+      "locationLabel": "泉岳寺",
+      "locationType": "station",
+      "positionOrder": 6,
+      "confidence": "medium",
+      "serviceTypeCode": "Express",
+      "serviceTypeLabel": "急行",
+      "serviceTone": "express",
+      "serviceColor": "#1358b8",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "青砥",
+      "destinationLabel": "羽田空港第1・第2ターミナル",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "Operator:Toei",
+      "vehicleLabel": "",
+      "sourceTags": [
+        "live"
+      ],
+      "researchCandidate": true,
+      "note": "",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "2188Kb",
+      "lineId": "asakusa",
+      "lineLabel": "都営浅草線",
+      "directionCode": "RailDirection:Southbound",
+      "directionLabel": "Rail Direction:Southbound",
+      "positionCode": "odpt.Station:Toei.Asakusa.Sengakuji",
+      "locationLabel": "泉岳寺",
+      "locationType": "station",
+      "positionOrder": 6,
+      "confidence": "medium",
+      "serviceTypeCode": "Local",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "泉岳寺",
+      "destinationLabel": "西馬込",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "Operator:Keisei",
+      "vehicleLabel": "",
+      "sourceTags": [
+        "live"
+      ],
+      "researchCandidate": true,
+      "note": "",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "2101T",
+      "lineId": "asakusa",
+      "lineLabel": "都営浅草線",
+      "directionCode": "RailDirection:Northbound",
+      "directionLabel": "Rail Direction:Northbound",
+      "positionCode": "odpt.Station:Toei.Asakusa.Daimon",
+      "locationLabel": "大門",
+      "locationType": "station",
+      "positionOrder": 8,
+      "confidence": "medium",
+      "serviceTypeCode": "Local",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "羽田空港第1・第2ターミナル",
+      "destinationLabel": "印旛日本医大",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "Operator:Toei",
+      "vehicleLabel": "",
+      "sourceTags": [
+        "live"
+      ],
+      "researchCandidate": true,
+      "note": "",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "2010K",
+      "lineId": "asakusa",
+      "lineLabel": "都営浅草線",
+      "directionCode": "RailDirection:Southbound",
+      "directionLabel": "Rail Direction:Southbound",
+      "positionCode": "odpt.Station:Toei.Asakusa.Shimbashi",
+      "locationLabel": "新橋",
+      "locationType": "station",
+      "positionOrder": 9,
+      "confidence": "medium",
+      "serviceTypeCode": "Local",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "成田空港第1ターミナル",
+      "destinationLabel": "西馬込",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "Operator:Keisei",
+      "vehicleLabel": "",
+      "sourceTags": [
+        "live"
+      ],
+      "researchCandidate": true,
+      "note": "",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "2021H",
+      "lineId": "asakusa",
+      "lineLabel": "都営浅草線",
+      "directionCode": "RailDirection:Northbound",
+      "directionLabel": "Rail Direction:Northbound",
+      "positionCode": "odpt.Station:Toei.Asakusa.HigashiGinza",
+      "locationLabel": "東銀座",
+      "locationType": "station",
+      "positionOrder": 10,
+      "confidence": "medium",
+      "serviceTypeCode": "Local",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "京急久里浜",
+      "destinationLabel": "青砥",
+      "platform": "",
+      "delayMinutes": 1.0,
+      "ownerLabel": "Operator:Keikyu",
+      "vehicleLabel": "",
+      "sourceTags": [
+        "live"
+      ],
+      "researchCandidate": true,
+      "note": "",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "2127N",
+      "lineId": "asakusa",
+      "lineLabel": "都営浅草線",
+      "directionCode": "RailDirection:Northbound",
+      "directionLabel": "Rail Direction:Northbound",
+      "positionCode": "odpt.Station:Toei.Asakusa.HigashiNihombashi",
+      "locationLabel": "東日本橋",
+      "locationType": "station",
+      "positionOrder": 14,
+      "confidence": "medium",
+      "serviceTypeCode": "Local",
+      "serviceTypeLabel": "普通",
+      "serviceTone": "local",
+      "serviceColor": "#2f2f2f",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "羽田空港第1・第2ターミナル",
+      "destinationLabel": "印旛日本医大",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "Operator:Hokuso",
+      "vehicleLabel": "",
+      "sourceTags": [
+        "live"
+      ],
+      "researchCandidate": true,
+      "note": "",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "2028N",
+      "lineId": "asakusa",
+      "lineLabel": "都営浅草線",
+      "directionCode": "RailDirection:Southbound",
+      "directionLabel": "Rail Direction:Southbound",
+      "positionCode": "odpt.Station:Toei.Asakusa.HigashiNihombashi -> odpt.Station:Toei.Asakusa.Ningyocho",
+      "locationLabel": "東日本橋",
+      "locationType": "station",
+      "positionOrder": 14,
+      "confidence": "high",
+      "serviceTypeCode": "Express",
+      "serviceTypeLabel": "急行",
+      "serviceTone": "express",
+      "serviceColor": "#1358b8",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "印旛日本医大",
+      "destinationLabel": "羽田空港第1・第2ターミナル",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "Operator:Hokuso",
+      "vehicleLabel": "",
+      "sourceTags": [
+        "live"
+      ],
+      "researchCandidate": false,
+      "note": "",
+      "detailRows": [],
+      "detailSummary": ""
+    },
+    {
+      "trainNumber": "2146H",
+      "lineId": "asakusa",
+      "lineLabel": "都営浅草線",
+      "directionCode": "RailDirection:Southbound",
+      "directionLabel": "Rail Direction:Southbound",
+      "positionCode": "odpt.Station:Toei.Asakusa.HonjoAzumabashi -> odpt.Station:Toei.Asakusa.Asakusa",
+      "locationLabel": "本所吾妻橋",
+      "locationType": "station",
+      "positionOrder": 18,
+      "confidence": "high",
+      "serviceTypeCode": "LimitedExpress",
+      "serviceTypeLabel": "特急",
+      "serviceTone": "express",
+      "serviceColor": "#1358b8",
+      "serviceTextColor": "#ffffff",
+      "originLabel": "京成高砂",
+      "destinationLabel": "三浦海岸",
+      "platform": "",
+      "delayMinutes": 0.0,
+      "ownerLabel": "Operator:Keikyu",
+      "vehicleLabel": "",
+      "sourceTags": [
+        "live"
+      ],
+      "researchCandidate": false,
+      "note": "",
+      "detailRows": [],
+      "detailSummary": ""
+    }
   ],
-  "error": "<urlopen error [WinError 10061] 対象のコンピューターによって拒否されたため、接続できませんでした。>",
+  "warnings": [
+    "fromStation / toStation を主情報として扱い、不足分だけ時刻表で補完します。",
+    "直通先の表示は、辞書に無い場合は ODPT トークンを整形して使います。"
+  ],
+  "error": "",
   "sourceUrls": [
     {
       "label": "ODPT在線情報",
@@ -28,6 +390,228 @@
       "url": "https://kisaragi-cure.github.io/ToeiAsakusa/"
     }
   ],
-  "meta": {},
+  "meta": {
+    "consumerKeyConfigured": true,
+    "timetableStations": [
+      "Sengakuji",
+      "Oshiage"
+    ],
+    "elesite": {
+      "enabled": true,
+      "routeCode": "toei_asakusa",
+      "directionInfo": {
+        "c_left": "西馬込",
+        "c_right": "青砥",
+        "is_kiten_left": false
+      },
+      "alerts": [
+        {
+          "info": "平常運転",
+          "reason": "",
+          "detail": "",
+          "postedAt": "20:45"
+        },
+        {
+          "info": "遅れ20分以上",
+          "reason": "他路線の影響",
+          "detail": "京急線内人身事故の影響で一部列車に遅れと運休が発生｡最大遅延時間68分",
+          "postedAt": "16:33"
+        },
+        {
+          "info": "遅れ20分未満",
+          "reason": "人身事故",
+          "detail": "京急線内北品川での人身事故の影響で行先種別変更発生。",
+          "postedAt": "14:22"
+        }
+      ],
+      "alertCount": 3,
+      "leftTerminal": "西馬込",
+      "rightTerminal": "青砥",
+      "originSide": "right",
+      "formationCount": 5,
+      "formationLabels": [
+        "都営8両",
+        "京成(SA車)8両",
+        "京成(一般車)8両",
+        "北総/千葉NT8両",
+        "1500/1000/600形 8両"
+      ],
+      "diaPatternNames": [
+        "平日ダイヤ#20251213",
+        "休日ダイヤ#20251213",
+        "大晦日ダイヤ#20251213",
+        "元日ダイヤ#20251213"
+      ],
+      "todayDiaLabel": "休日ダイヤ#20251213",
+      "userRank": 0.0,
+      "shoteiList": [
+        "都営8両",
+        "京成(SA車)8両",
+        "京成(一般車)8両",
+        "北総/千葉NT8両",
+        "1500/1000/600形 8両"
+      ],
+      "todayDiaPattern": {
+        "day_id": 684,
+        "name": "休日ダイヤ#20251213"
+      },
+      "currentHenseiCount": 1,
+      "currentHenseiList": [
+        "2100"
+      ],
+      "currentHenseiPreview": [
+        "2100"
+      ],
+      "routeMap": {
+        "title": "都営浅草線 路線補助",
+        "leftTerminal": "西馬込",
+        "rightTerminal": "青砥",
+        "formationCount": 5,
+        "diaPatternCount": 4,
+        "todayPattern": "休日ダイヤ#20251213"
+      },
+      "error": ""
+    },
+    "detailMode": "詳細情報なし",
+    "routeMapMode": "位置順レーン",
+    "detailCount": 0
+  },
+  "routeMap": {
+    "title": "都営浅草線 路線図モード",
+    "description": "positionOrder と在線位置ラベルをもとに組み立てた簡易路線図です。",
+    "updatedAt": "2026-04-11T21:55:59+09:00",
+    "stations": [
+      {
+        "id": "asakusa:odpt.Station:Toei.Asakusa.NishiMagome:0.0",
+        "label": "西馬込",
+        "positionCode": "odpt.Station:Toei.Asakusa.NishiMagome",
+        "positionOrder": 0.0,
+        "lineId": "asakusa",
+        "lineLabel": "都営浅草線"
+      },
+      {
+        "id": "asakusa:odpt.Station:Toei.Asakusa.Nakanobu -> odpt.Station:Toei.Asakusa.Magome:2.0",
+        "label": "中延",
+        "positionCode": "odpt.Station:Toei.Asakusa.Nakanobu -> odpt.Station:Toei.Asakusa.Magome",
+        "positionOrder": 2.0,
+        "lineId": "asakusa",
+        "lineLabel": "都営浅草線"
+      },
+      {
+        "id": "asakusa:odpt.Station:Toei.Asakusa.Togoshi -> odpt.Station:Toei.Asakusa.Gotanda:3.0",
+        "label": "戸越",
+        "positionCode": "odpt.Station:Toei.Asakusa.Togoshi -> odpt.Station:Toei.Asakusa.Gotanda",
+        "positionOrder": 3.0,
+        "lineId": "asakusa",
+        "lineLabel": "都営浅草線"
+      },
+      {
+        "id": "asakusa:odpt.Station:Toei.Asakusa.Sengakuji:6.0",
+        "label": "泉岳寺",
+        "positionCode": "odpt.Station:Toei.Asakusa.Sengakuji",
+        "positionOrder": 6.0,
+        "lineId": "asakusa",
+        "lineLabel": "都営浅草線"
+      },
+      {
+        "id": "asakusa:odpt.Station:Toei.Asakusa.Daimon:8.0",
+        "label": "大門",
+        "positionCode": "odpt.Station:Toei.Asakusa.Daimon",
+        "positionOrder": 8.0,
+        "lineId": "asakusa",
+        "lineLabel": "都営浅草線"
+      },
+      {
+        "id": "asakusa:odpt.Station:Toei.Asakusa.Shimbashi:9.0",
+        "label": "新橋",
+        "positionCode": "odpt.Station:Toei.Asakusa.Shimbashi",
+        "positionOrder": 9.0,
+        "lineId": "asakusa",
+        "lineLabel": "都営浅草線"
+      },
+      {
+        "id": "asakusa:odpt.Station:Toei.Asakusa.HigashiGinza:10.0",
+        "label": "東銀座",
+        "positionCode": "odpt.Station:Toei.Asakusa.HigashiGinza",
+        "positionOrder": 10.0,
+        "lineId": "asakusa",
+        "lineLabel": "都営浅草線"
+      },
+      {
+        "id": "asakusa:odpt.Station:Toei.Asakusa.HigashiNihombashi:14.0",
+        "label": "東日本橋",
+        "positionCode": "odpt.Station:Toei.Asakusa.HigashiNihombashi",
+        "positionOrder": 14.0,
+        "lineId": "asakusa",
+        "lineLabel": "都営浅草線"
+      },
+      {
+        "id": "asakusa:odpt.Station:Toei.Asakusa.HigashiNihombashi -> odpt.Station:Toei.Asakusa.Ningyocho:14.0",
+        "label": "東日本橋",
+        "positionCode": "odpt.Station:Toei.Asakusa.HigashiNihombashi -> odpt.Station:Toei.Asakusa.Ningyocho",
+        "positionOrder": 14.0,
+        "lineId": "asakusa",
+        "lineLabel": "都営浅草線"
+      },
+      {
+        "id": "asakusa:odpt.Station:Toei.Asakusa.HonjoAzumabashi -> odpt.Station:Toei.Asakusa.Asakusa:18.0",
+        "label": "本所吾妻橋",
+        "positionCode": "odpt.Station:Toei.Asakusa.HonjoAzumabashi -> odpt.Station:Toei.Asakusa.Asakusa",
+        "positionOrder": 18.0,
+        "lineId": "asakusa",
+        "lineLabel": "都営浅草線"
+      }
+    ],
+    "lines": [
+      {
+        "id": "asakusa",
+        "label": "都営浅草線",
+        "nodes": [
+          "asakusa:odpt.Station:Toei.Asakusa.NishiMagome:0.0",
+          "asakusa:odpt.Station:Toei.Asakusa.Nakanobu -> odpt.Station:Toei.Asakusa.Magome:2.0",
+          "asakusa:odpt.Station:Toei.Asakusa.Togoshi -> odpt.Station:Toei.Asakusa.Gotanda:3.0",
+          "asakusa:odpt.Station:Toei.Asakusa.Sengakuji:6.0",
+          "asakusa:odpt.Station:Toei.Asakusa.Daimon:8.0",
+          "asakusa:odpt.Station:Toei.Asakusa.Shimbashi:9.0",
+          "asakusa:odpt.Station:Toei.Asakusa.HigashiGinza:10.0",
+          "asakusa:odpt.Station:Toei.Asakusa.HigashiNihombashi:14.0",
+          "asakusa:odpt.Station:Toei.Asakusa.HigashiNihombashi -> odpt.Station:Toei.Asakusa.Ningyocho:14.0",
+          "asakusa:odpt.Station:Toei.Asakusa.HonjoAzumabashi -> odpt.Station:Toei.Asakusa.Asakusa:18.0"
+        ],
+        "stationCount": 10
+      }
+    ],
+    "directions": [
+      {
+        "id": "RailDirection:Northbound",
+        "label": "Rail Direction:Northbound",
+        "nodes": [
+          "asakusa:odpt.Station:Toei.Asakusa.NishiMagome:0.0",
+          "asakusa:odpt.Station:Toei.Asakusa.Togoshi -> odpt.Station:Toei.Asakusa.Gotanda:3.0",
+          "asakusa:odpt.Station:Toei.Asakusa.Sengakuji:6.0",
+          "asakusa:odpt.Station:Toei.Asakusa.Daimon:8.0",
+          "asakusa:odpt.Station:Toei.Asakusa.HigashiGinza:10.0",
+          "asakusa:odpt.Station:Toei.Asakusa.HigashiNihombashi:14.0"
+        ],
+        "trainCount": 6
+      },
+      {
+        "id": "RailDirection:Southbound",
+        "label": "Rail Direction:Southbound",
+        "nodes": [
+          "asakusa:odpt.Station:Toei.Asakusa.Nakanobu -> odpt.Station:Toei.Asakusa.Magome:2.0",
+          "asakusa:odpt.Station:Toei.Asakusa.Sengakuji:6.0",
+          "asakusa:odpt.Station:Toei.Asakusa.Shimbashi:9.0",
+          "asakusa:odpt.Station:Toei.Asakusa.HigashiNihombashi -> odpt.Station:Toei.Asakusa.Ningyocho:14.0",
+          "asakusa:odpt.Station:Toei.Asakusa.HonjoAzumabashi -> odpt.Station:Toei.Asakusa.Asakusa:18.0"
+        ],
+        "trainCount": 6
+      }
+    ],
+    "terminals": {
+      "left": "西馬込",
+      "right": "青砥"
+    }
+  },
   "loaded": true
 }

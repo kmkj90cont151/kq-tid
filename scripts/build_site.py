@@ -5,12 +5,12 @@ import json
 import re
 import shutil
 import sys
-import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB_DIR = ROOT / "web"
 TOOLS_DIR = ROOT / "tools"
+DEFAULT_FIXTURES_DIR = ROOT / "source"
 
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
@@ -29,16 +29,17 @@ def safe_slug(value: str) -> str:
 
 
 def copy_web_assets(output_dir: Path) -> None:
-    if output_dir.exists():
-        shutil.rmtree(output_dir)
-    shutil.copytree(WEB_DIR, output_dir)
+    shutil.copytree(WEB_DIR, output_dir, dirs_exist_ok=True)
     (output_dir / ".nojekyll").write_text("", encoding="utf-8")
 
 
 def load_json_if_exists(path: Path) -> object | None:
     if not path.exists():
         return None
-    return json.loads(path.read_text(encoding="utf-8"))
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
 
 
 def build_keikyu_detail_files(output_dir: Path, network: dict[str, object]) -> int:
@@ -94,6 +95,8 @@ def build_keikyu_detail_files(output_dir: Path, network: dict[str, object]) -> i
 
 
 def build_site(output_dir: Path, fixtures_dir: Path | None = None) -> Path:
+    resolved_fixtures_dir = fixtures_dir or (DEFAULT_FIXTURES_DIR if DEFAULT_FIXTURES_DIR.exists() else None)
+
     keikyu_fallback = load_json_if_exists(output_dir / "data" / "networks" / "keikyu.json")
     keikyu_detail_stash: Path | None = None
     existing_detail_dir = output_dir / "data" / "details" / "keikyu"
@@ -101,45 +104,59 @@ def build_site(output_dir: Path, fixtures_dir: Path | None = None) -> Path:
         keikyu_detail_stash = Path(tempfile.mkdtemp(prefix="keikyu-details-", dir=str(ROOT)))
         shutil.copytree(existing_detail_dir, keikyu_detail_stash / "keikyu", dirs_exist_ok=True)
 
-    copy_web_assets(output_dir)
-    networks, manifest = build_site_payloads(fixtures_dir)
+    staging_dir = ROOT / ".site-build-staging"
+    try:
+        if staging_dir.exists():
+            shutil.rmtree(staging_dir, ignore_errors=True)
+        staging_dir.mkdir(parents=True, exist_ok=True)
+        copy_web_assets(staging_dir)
+        networks, manifest = build_site_payloads(resolved_fixtures_dir)
 
-    for network in networks:
-        if network.get("id") == "keikyu" and network.get("status") != "ok" and isinstance(keikyu_fallback, dict):
-            fallback_network = dict(keikyu_fallback)
-            fallback_network.setdefault("loaded", True)
-            network.clear()
-            network.update(fallback_network)
-            if keikyu_detail_stash:
-                fallback_detail_dir = keikyu_detail_stash / "keikyu"
-                if fallback_detail_dir.exists():
-                    shutil.copytree(
-                        fallback_detail_dir,
-                        output_dir / "data" / "details" / "keikyu",
-                        dirs_exist_ok=True,
-                    )
+        for network in networks:
+            if network.get("id") == "keikyu" and network.get("status") != "ok" and isinstance(keikyu_fallback, dict):
+                if keikyu_fallback.get("trains") or keikyu_fallback.get("status") == "ok":
+                    fallback_network = dict(keikyu_fallback)
+                    fallback_network.setdefault("loaded", True)
+                    network.clear()
+                    network.update(fallback_network)
+                    if keikyu_detail_stash:
+                        fallback_detail_dir = keikyu_detail_stash / "keikyu"
+                        if fallback_detail_dir.exists():
+                            shutil.copytree(
+                                fallback_detail_dir,
+                                staging_dir / "data" / "details" / "keikyu",
+                                dirs_exist_ok=True,
+                            )
 
-    for network in networks:
-        if network.get("id") == "keikyu":
-            build_keikyu_detail_files(output_dir, network)
-        write_json(output_dir / "data" / "networks" / f"{network['id']}.json", network)
+        for network in networks:
+            if network.get("id") == "keikyu":
+                build_keikyu_detail_files(staging_dir, network)
+            write_json(staging_dir / "data" / "networks" / f"{network['id']}.json", network)
 
-    manifest["networks"] = [
-        {
-            "id": network["id"],
-            "label": network["label"],
-            "description": network["description"],
-            "accentColor": network["accentColor"],
-            "updatedAt": network.get("updatedAt", ""),
-            "trainCount": len(network.get("trains", [])) if isinstance(network.get("trains"), list) else 0,
-            "detailCount": network.get("meta", {}).get("detailCount", 0) if isinstance(network.get("meta"), dict) else 0,
-            "dataUrl": f"data/networks/{network['id']}.json",
-            "sourceUrls": network.get("sourceUrls", []),
-        }
-        for network in networks
-    ]
-    write_json(output_dir / "data" / "manifest.json", manifest)
-    return output_dir
+        manifest["networks"] = [
+            {
+                "id": network["id"],
+                "label": network["label"],
+                "description": network["description"],
+                "accentColor": network["accentColor"],
+                "updatedAt": network.get("updatedAt", ""),
+                "trainCount": len(network.get("trains", [])) if isinstance(network.get("trains"), list) else 0,
+                "detailCount": network.get("meta", {}).get("detailCount", 0) if isinstance(network.get("meta"), dict) else 0,
+                "dataUrl": f"data/networks/{network['id']}.json",
+                "sourceUrls": network.get("sourceUrls", []),
+            }
+            for network in networks
+        ]
+        write_json(staging_dir / "data" / "manifest.json", manifest)
+
+        if output_dir.exists():
+            shutil.rmtree(output_dir)
+        shutil.move(str(staging_dir), str(output_dir))
+        return output_dir
+    except Exception:
+        if staging_dir.exists():
+            shutil.rmtree(staging_dir, ignore_errors=True)
+        raise
 
 
 def main() -> int:
@@ -157,4 +174,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
