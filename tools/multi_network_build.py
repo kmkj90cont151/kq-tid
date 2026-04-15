@@ -270,6 +270,27 @@ def pick_palette(label: str) -> dict[str, str]:
     return SERVICE_PALETTE.get(classify_service_tone(label), SERVICE_PALETTE["unknown"])
 
 
+def pick_keisei_palette(service_type_code: Any, label: str) -> dict[str, str]:
+    code = string_or_empty(service_type_code).strip()
+    text = string_or_empty(label)
+
+    if code in {"0", "1", "2", "16"} or any(token in text for token in ("スカイライナー", "モーニングライナー", "臨時ライナー", "イブニングライナー", "シティライナー")):
+        return {"color": "#0b3b8c", "textColor": "#ffffff"}
+    if code in {"17", "18"} or "アクセス特急" in text:
+        return {"color": "#f39800", "textColor": "#1f2937"}
+    if code == "3" or "通勤特急" in text:
+        return {"color": "#69c7f0", "textColor": "#083344"}
+    if code in {"13", "14", "15"} or "快速特急" in text:
+        return {"color": "#009944", "textColor": "#ffffff"}
+    if code == "4" or text == "特急":
+        return {"color": "#d23431", "textColor": "#ffffff"}
+    if code in {"10", "11"} or text == "快速":
+        return {"color": "#ff5fa2", "textColor": "#ffffff"}
+    if code == "6" or text == "普通":
+        return {"color": "#2f2f2f", "textColor": "#ffffff"}
+    return pick_palette(text)
+
+
 def normalize_display_railway_name(value: Any) -> str:
     return string_or_empty(value).strip()
 
@@ -416,20 +437,21 @@ def build_elesite_meta(network_id: str, fixtures_dir: Path | None = None) -> dic
                     current_hensei_payload = read_json_file(fixture_path)
                     break
         if current_hensei_payload is None:
-            try:
-                current_hensei_payload, _ = fetch_json(
-                    build_url(
-                        ELESITE_API_BASE + "/get_current_hensei_list",
-                        {
-                            "rosen_code": route_code,
-                            "day_id": day_id,
-                            "select_date": select_date,
-                        },
+            if fixtures_dir is None:
+                try:
+                    current_hensei_payload, _ = fetch_json(
+                        build_url(
+                            ELESITE_API_BASE + "/get_current_hensei_list",
+                            {
+                                "rosen_code": route_code,
+                                "day_id": day_id,
+                                "select_date": select_date,
+                            },
+                        )
                     )
-                )
-            except Exception as exc:
-                errors.append(str(exc))
-                current_hensei_payload = None
+                except Exception as exc:
+                    errors.append(str(exc))
+                    current_hensei_payload = None
 
         if isinstance(current_hensei_payload, dict):
             payload_list = current_hensei_payload.get("hensei_list")
@@ -891,7 +913,7 @@ def build_keisei_timetable_lookup(
             fixture_path = get_fixture_path(fixtures_dir, fixture_name)
             if fixture_path:
                 payload = read_json_file(fixture_path)
-        if payload is None:
+        if payload is None and fixtures_dir is None:
             url = f"{KEISEI_ENDPOINTS['diainfBase']}{train_number}.json?ts={service_date}"
             try:
                 payload, _ = fetch_json(url)
@@ -913,6 +935,7 @@ def normalize_keisei_train(
     service_type_label = string_or_empty(service_entry.get("name")) if service_entry else "不明"
     destination_label = string_or_empty(destination_entry.get("name")) if destination_entry else ""
     train_number = record.get("trainNumber") or "(列番なし)"
+    palette = pick_keisei_palette(record["raw"].get("sy"), service_type_label)
     source_tags = ["live"]
     if dia_rows:
         source_tags.append("timetable")
@@ -931,8 +954,8 @@ def normalize_keisei_train(
         "serviceTypeCode": record["raw"].get("sy", ""),
         "serviceTypeLabel": service_type_label or "不明",
         "serviceTone": classify_service_tone(service_type_label),
-        "serviceColor": pick_palette(service_type_label)["color"],
-        "serviceTextColor": pick_palette(service_type_label)["textColor"],
+        "serviceColor": palette["color"],
+        "serviceTextColor": palette["textColor"],
         "originLabel": "",
         "destinationLabel": destination_label,
         "platform": "",
