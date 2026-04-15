@@ -1,38 +1,124 @@
 {
-  "appName": "在線位置研究ビューア",
-  "appVersion": "github-pages-1",
-  "buildTimestamp": "2026-04-12T07:20:41.290631+00:00",
+  "appName": "私鉄在線情報ビューア",
+  "appVersion": "github-pages-multi-1",
+  "buildTimestamp": "2026-04-15T00:56:13.856360+00:00",
   "publishTarget": "github-pages",
-  "refreshPolicy": "GitHub Actions で約10分ごとに再生成",
+  "refreshPolicy": "GitHub Actions で定期ビルド",
   "networks": [
     {
       "id": "keikyu",
       "label": "京急線",
-      "description": "京急の在線位置と列車別時刻表をまとめて確認できる GitHub Pages 向けの静的サイトです。",
+      "description": "京急の在線情報と列車別時刻表を静的に配信します。",
       "accentColor": "#d72731",
-      "updatedAt": "2026-04-12 16:20:16",
-      "trainCount": 61,
-      "detailCount": 60,
+      "updatedAt": "",
+      "trainCount": 0,
+      "detailCount": 0,
       "dataUrl": "data/networks/keikyu.json",
       "sourceUrls": [
         {
-          "label": "京急在線 API",
+          "label": "京急API",
           "url": "https://app-kq.net/api/train"
         },
         {
-          "label": "京急公式在線",
+          "label": "京急在線ページ",
           "url": "https://app-kq.net/web/jp/html/zaisen.html"
         },
         {
-          "label": "京急列車別時刻表 API 例",
+          "label": "京急列車別時刻表",
           "url": "https://app-kq.net/api/locationTimetable/8201-1-1403A"
+        }
+      ]
+    },
+    {
+      "id": "toei",
+      "label": "都営浅草線",
+      "description": "ODPT の在線データと境界駅時刻表を組み合わせて表示します。",
+      "accentColor": "#cb8c15",
+      "updatedAt": "",
+      "trainCount": 0,
+      "detailCount": 0,
+      "dataUrl": "data/networks/toei.json",
+      "sourceUrls": [
+        {
+          "label": "ODPT在線情報",
+          "url": "https://api.odpt.org/api/v4/odpt:Train?odpt:railway=odpt.Railway:Toei.Asakusa"
+        },
+        {
+          "label": "泉岳寺時刻表",
+          "url": "https://api-public.odpt.org/api/v4/odpt:StationTimetable?odpt:station=odpt.Station:Toei.Asakusa.Sengakuji"
+        },
+        {
+          "label": "押上時刻表",
+          "url": "https://api-public.odpt.org/api/v4/odpt:StationTimetable?odpt:station=odpt.Station:Toei.Asakusa.Oshiage"
+        },
+        {
+          "label": "えるサイト",
+          "url": "https://kisaragi-cure.github.io/ToeiAsakusa/"
+        }
+      ]
+    },
+    {
+      "id": "keisei",
+      "label": "京成線",
+      "description": "京成の在線情報、列番別時刻表、えるサイトの路線メタをまとめて表示します。",
+      "accentColor": "#0b5bd3",
+      "updatedAt": "",
+      "trainCount": 0,
+      "detailCount": 0,
+      "dataUrl": "data/networks/keisei.json",
+      "sourceUrls": [
+        {
+          "label": "在線情報",
+          "url": "https://zaisen.tid-keisei.jp/data/traffic_info.json"
+        },
+        {
+          "label": "在線ページ",
+          "url": "https://zaisen.tid-keisei.jp/html/zaisen.html?line=1"
+        },
+        {
+          "label": "えるサイト",
+          "url": "https://www.elesite-next.com/train_location"
+        }
+      ]
+    },
+    {
+      "id": "matsudo",
+      "label": "京成松戸線",
+      "description": "松戸線の在線情報とえるサイト由来の補助メタを表示します。",
+      "accentColor": "#13866f",
+      "updatedAt": "",
+      "trainCount": 0,
+      "detailCount": 0,
+      "dataUrl": "data/networks/matsudo.json",
+      "sourceUrls": [
+        {
+          "label": "松戸線在線情報",
+          "url": "https://zaisen.tid-keisei.jp/data/matsudo_train_info.json"
+        },
+        {
+          "label": "在線ページ",
+          "url": "https://zaisen.tid-keisei.jp/html/zaisen.html?line=7"
+        },
+        {
+          "label": "えるサイト",
+          "url": "https://www.elesite-next.com/train_location"
         }
       ]
     }
   ],
+  "summary": {
+    "totalTrains": 0,
+    "delayedTrains": 0,
+    "researchTrains": 0,
+    "healthyNetworks": 0,
+    "loadedNetworks": 0,
+    "totalNetworks": 4
+  },
   "notes": [
-    "GitHub Pages 版は Python のビルド結果を静的配信します。",
-    "ブラウザでは列車カードを開いたときだけ詳細 JSON を読み込みます。",
-    "現在の GitHub Pages 版は京急を正式対応対象にしています。"
+    "Python のビルド出力を GitHub Pages へ静的配信します。",
+    "ブラウザは manifest.json から路線タブごとに JSON を遅延読み込みします。",
+    "京急の列車別時刻表は列車カード展開時に個別 JSON を後読みします。",
+    "都営浅草線・京成線・松戸線は Python ビルド時に補完済みデータを内蔵します。",
+    "えるサイト由来の方向・ダイヤ・編成メタは route 補助情報として同梱します。"
   ]
 }

@@ -771,6 +771,14 @@ function compareDirectionLabelForNetwork(network, left, right) {
       return (leftIndex >= 0 ? leftIndex : 999) - (rightIndex >= 0 ? rightIndex : 999);
     }
   }
+  if (network && network.id === "matsudo") {
+    const matsudoOrder = ["下り", "上り"];
+    const leftIndex = matsudoOrder.indexOf(left);
+    const rightIndex = matsudoOrder.indexOf(right);
+    if (leftIndex >= 0 || rightIndex >= 0) {
+      return (leftIndex >= 0 ? leftIndex : 999) - (rightIndex >= 0 ? rightIndex : 999);
+    }
+  }
   return compareDirectionLabel(left, right);
 }
 

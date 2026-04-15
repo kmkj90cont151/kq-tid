@@ -1,0 +1,29 @@
+{
+  "id": "keisei",
+  "label": "京成線",
+  "description": "京成の在線情報、列番別時刻表、えるサイトの路線メタをまとめて表示します。",
+  "accentColor": "#0b5bd3",
+  "status": "error",
+  "updatedAt": "",
+  "trains": [],
+  "warnings": [
+    "データ取得に失敗しました。"
+  ],
+  "error": "<urlopen error [WinError 10061] 対象のコンピューターによって拒否されたため、接続できませんでした。>",
+  "sourceUrls": [
+    {
+      "label": "在線情報",
+      "url": "https://zaisen.tid-keisei.jp/data/traffic_info.json"
+    },
+    {
+      "label": "在線ページ",
+      "url": "https://zaisen.tid-keisei.jp/html/zaisen.html?line=1"
+    },
+    {
+      "label": "えるサイト",
+      "url": "https://www.elesite-next.com/train_location"
+    }
+  ],
+  "meta": {},
+  "loaded": true
+}

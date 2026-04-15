@@ -1,0 +1,29 @@
+{
+  "id": "matsudo",
+  "label": "京成松戸線",
+  "description": "松戸線の在線情報とえるサイト由来の補助メタを表示します。",
+  "accentColor": "#13866f",
+  "status": "error",
+  "updatedAt": "",
+  "trains": [],
+  "warnings": [
+    "データ取得に失敗しました。"
+  ],
+  "error": "<urlopen error [WinError 10061] 対象のコンピューターによって拒否されたため、接続できませんでした。>",
+  "sourceUrls": [
+    {
+      "label": "松戸線在線情報",
+      "url": "https://zaisen.tid-keisei.jp/data/matsudo_train_info.json"
+    },
+    {
+      "label": "在線ページ",
+      "url": "https://zaisen.tid-keisei.jp/html/zaisen.html?line=7"
+    },
+    {
+      "label": "えるサイト",
+      "url": "https://www.elesite-next.com/train_location"
+    }
+  ],
+  "meta": {},
+  "loaded": true
+}

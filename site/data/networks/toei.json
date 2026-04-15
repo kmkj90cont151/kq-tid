@@ -1,0 +1,33 @@
+{
+  "id": "toei",
+  "label": "都営浅草線",
+  "description": "ODPT の在線データと境界駅時刻表を組み合わせて表示します。",
+  "accentColor": "#cb8c15",
+  "status": "error",
+  "updatedAt": "",
+  "trains": [],
+  "warnings": [
+    "データ取得に失敗しました。"
+  ],
+  "error": "<urlopen error [WinError 10061] 対象のコンピューターによって拒否されたため、接続できませんでした。>",
+  "sourceUrls": [
+    {
+      "label": "ODPT在線情報",
+      "url": "https://api.odpt.org/api/v4/odpt:Train?odpt:railway=odpt.Railway:Toei.Asakusa"
+    },
+    {
+      "label": "泉岳寺時刻表",
+      "url": "https://api-public.odpt.org/api/v4/odpt:StationTimetable?odpt:station=odpt.Station:Toei.Asakusa.Sengakuji"
+    },
+    {
+      "label": "押上時刻表",
+      "url": "https://api-public.odpt.org/api/v4/odpt:StationTimetable?odpt:station=odpt.Station:Toei.Asakusa.Oshiage"
+    },
+    {
+      "label": "えるサイト",
+      "url": "https://kisaragi-cure.github.io/ToeiAsakusa/"
+    }
+  ],
+  "meta": {},
+  "loaded": true
+}

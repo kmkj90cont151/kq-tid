@@ -496,6 +496,32 @@
     return SERVICE_PALETTE[classifyServiceTone(label)] || SERVICE_PALETTE.unknown;
   }
 
+  function pickKeiseiPalette(label) {
+    const text = stringOrEmpty(label);
+    if (["スカイライナー", "モーニングライナー", "臨時ライナー", "イブニングライナー"].some((token) => text.includes(token))) {
+      return { color: "#0b3b8c", textColor: "#ffffff" };
+    }
+    if (text.includes("アクセス特急")) {
+      return { color: "#f39800", textColor: "#111111" };
+    }
+    if (text.includes("通勤特急")) {
+      return { color: "#69c7f0", textColor: "#0b2942" };
+    }
+    if (text.includes("快速特急")) {
+      return { color: "#009944", textColor: "#ffffff" };
+    }
+    if (text.includes("特急")) {
+      return { color: "#d23431", textColor: "#ffffff" };
+    }
+    if (text.includes("快速")) {
+      return { color: "#ff5fa2", textColor: "#ffffff" };
+    }
+    if (text.includes("普通")) {
+      return { color: "#2f2f2f", textColor: "#ffffff" };
+    }
+    return pickPalette(label);
+  }
+
   function inferOwnerLabelFromTrainNumber(trainNumber, networkId) {
     const text = stringOrEmpty(trainNumber);
     if (!text) {
@@ -1490,7 +1516,7 @@
     const directionCode = normalizeKeiseiDirectionCode(record.raw.hk);
     const carCount = toNumber(record.raw.sr, 0);
     const platform = stringOrEmpty(record.raw.bs).trim();
-    const palette = pickPalette(serviceTypeLabel);
+    const palette = pickKeiseiPalette(serviceTypeLabel);
     const trainNumber = record.trainNumber || "(列番なし)";
 
     return {
