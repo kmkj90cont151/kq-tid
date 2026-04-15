@@ -32,7 +32,7 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Build static site
-        run: python scripts/build_site.py --output site
+        run: python scripts/build_site.py --output site --skip-keikyu-details
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
@@ -48,4 +48,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4
