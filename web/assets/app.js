@@ -1,7 +1,7 @@
 const REFRESH_INTERVAL_MS = Number(window.APP_CONFIG?.refreshIntervalMs) || 15000;
 
 const SOURCE_TAG_LABELS = {
-  live: "リアルタイム",
+  live: "",
   timetable: "時刻表補完",
   enrichment: "補完情報",
   "official-web": "公式補完",
@@ -454,13 +454,16 @@ function renderTrainCard(train) {
   const displayDirectionLabel = getDisplayDirectionLabel(train);
   const directionCode = getTrainDirectionCode(train);
   const livePlatform = normalizePlatformValue(train.platform);
+  const sourceChips = Array.isArray(train.sourceTags)
+    ? train.sourceTags.map((tag) => labelSourceTag(tag)).filter(Boolean).map((label) => chip(label, "source")).join("")
+    : "";
   const chips = [
     train.destinationLabel ? chip(train.destinationLabel, "default") : "",
     livePlatform ? chip(`${livePlatform} 番線`, "default") : "",
     Number(train.delayMinutes || 0) > 0 ? chip(`${formatDelayMinutes(train.delayMinutes)} 分遅れ`, "delay") : "",
     train.ownerLabel ? chip(train.ownerLabel, "owner") : "",
     train.vehicleLabel ? chip(train.vehicleLabel, "default") : "",
-    Array.isArray(train.sourceTags) ? train.sourceTags.map((tag) => chip(labelSourceTag(tag), "source")).join("") : "",
+    sourceChips,
     train.researchCandidate ? chip("要確認", "research") : "",
     appState.filters.showRaw ? chip(`種別:${train.serviceTypeCode || "-"}`, "raw") : "",
     appState.filters.showRaw ? chip(`方向:${directionCode || "-"}`, "raw") : "",

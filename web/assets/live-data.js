@@ -13,6 +13,7 @@
   const KEISEI_ENDPOINTS = {
     traffic: "https://zaisen.tid-keisei.jp/data/traffic_info.json",
     diainfBase: "https://zaisen.tid-keisei.jp/data/diainf/",
+    matsudoDiaBase: "https://zaisen.tid-keisei.jp/data/diainf_SK/",
     matsudoTrainInfo: "https://zaisen.tid-keisei.jp/data/matsudo_train_info.json",
     matsudoDate: "https://zaisen.tid-keisei.jp/data/matsudo_date.json",
     matsudoStatus: "https://zaisen.tid-keisei.jp/data/matsudo_status.json",
@@ -63,12 +64,13 @@
     matsudo: {
       id: "matsudo",
       label: "松戸線",
-      description: "matsudo_train_info.json と matsudo_id.json を組み合わせて位置と運用番号を表示します。GitHub Pages 上ではプロキシ経由で取得します。",
+      description: "matsudo_train_info.json と matsudo_id.json を組み合わせて位置と運用番号を表示し、必要時のみ diainf_SK の列車別時刻表を後読みします。GitHub Pages 上ではプロキシ経由で取得します。",
       accentColor: "#13866f",
       sourceUrls: [
         { label: "在線API", url: KEISEI_ENDPOINTS.matsudoTrainInfo },
         { label: "公式在線ページ", url: "https://zaisen.tid-keisei.jp/html/zaisen.html?line=7" },
         { label: "位置辞書", url: KEISEI_ENDPOINTS.matsudoId },
+        { label: "列車別時刻表API例", url: `${KEISEI_ENDPOINTS.matsudoDiaBase}213.json` },
       ],
     },
   };
@@ -187,6 +189,21 @@
     "羽田空港第3ターミナル駅": "羽田空港第3ターミナル",
     "YRP野比駅": "YRP野比",
     "逗子・葉山駅": "逗子・葉山",
+  };
+
+  const KEISEI_SPECIAL_STOP_META = {
+    "43": {
+      label: "駒井野信号場",
+      lineCode: "1",
+      between: ["京成成田", "空港第2ビル"],
+      sectionLabel: "空港第2ビル - 駒井野信号場間",
+    },
+    "147": {
+      label: "根古谷信号場",
+      lineCode: "3",
+      between: ["成田湯川", "空港第2ビル"],
+      sectionLabel: "成田湯川 - 根古谷信号場間",
+    },
   };
 
   const TOEI_STATION_ORDER = [
@@ -1116,6 +1133,20 @@
         });
       });
 
+      Object.values(KEISEI_SPECIAL_STOP_META).forEach((special) => {
+        const fromCoord = pickKeiseiCoordinate(special.between[0], special.lineCode, bundle);
+        const toCoord = pickKeiseiCoordinate(special.between[1], special.lineCode, bundle);
+        if (!fromCoord || !toCoord) {
+          return;
+        }
+
+        const y = (fromCoord.y + toCoord.y) / 2;
+        const name = normalizeRailwayName(special.label);
+        bundle.coordinateByName[name] = (bundle.coordinateByName[name] || []).concat([{ rs: special.lineCode, x: 0, y }]);
+        bundle.lineStations[special.lineCode] = bundle.lineStations[special.lineCode] || [];
+        bundle.lineStations[special.lineCode].push({ name, y });
+      });
+
       Object.values(bundle.lineStations).forEach((stations) => {
         stations.sort((left, right) => left.y - right.y);
       });
@@ -1168,6 +1199,10 @@
   function lookupKeiseiStationName(code, config, isMatsudo) {
     if (!code) {
       return "";
+    }
+    const special = KEISEI_SPECIAL_STOP_META[stringOrEmpty(code)];
+    if (special) {
+      return special.label;
     }
     const stopEntry = config.stopByCode[code];
     const matsudoEntry = config.ikMatsudoByCode[code];
@@ -1242,24 +1277,62 @@
     return items.find((item) => stringOrEmpty(item.rs) === stringOrEmpty(lineCode)) || items[0];
   }
 
-  function buildKeiseiSectionLabel(stationLabel, lineCode, config) {
+  function getKeiseiSpecialStopPosition(code, config) {
+    const special = KEISEI_SPECIAL_STOP_META[stringOrEmpty(code)];
+    if (!special || !Array.isArray(special.between) || special.between.length !== 2) {
+      return null;
+    }
+
+    const fromCoord = pickKeiseiCoordinate(special.between[0], special.lineCode, config);
+    const toCoord = pickKeiseiCoordinate(special.between[1], special.lineCode, config);
+    if (!fromCoord || !toCoord) {
+      return null;
+    }
+
+    return {
+      label: special.label,
+      lineCode: special.lineCode,
+      positionOrder: (fromCoord.y + toCoord.y) / 2,
+      sectionLabel: special.sectionLabel || `${special.label}付近`,
+    };
+  }
+
+  function buildKeiseiSectionMeta(positionCode, stationLabel, lineCode, config, directionCode) {
     if (!stationLabel) {
-      return "";
+      return null;
     }
     const stations = config.lineStations[stringOrEmpty(lineCode)] || [];
     const normalized = normalizeRailwayName(stationLabel);
     const index = stations.findIndex((row) => row.name === normalized);
     if (index < 0) {
-      return `${stationLabel}付近`;
+      return null;
     }
-    const neighbor = stations[index + 1] || stations[index - 1] || null;
+    const prefix = stringOrEmpty(positionCode).trim().charAt(0);
+    const usePrevious = prefix === "D" || prefix === "S" || ((prefix === "" || prefix === "E") && String(directionCode) === "1");
+    const neighbor = usePrevious
+      ? (stations[index - 1] || stations[index + 1] || null)
+      : (stations[index + 1] || stations[index - 1] || null);
     if (!neighbor) {
-      return `${stationLabel}付近`;
+      return {
+        label: `${stationLabel}付近`,
+        positionOrder: stations[index].y,
+      };
     }
-    return `${denormalizeRailwayName(neighbor.name)} - ${stationLabel}間`;
+    const current = stations[index];
+    const left = neighbor.y <= current.y ? neighbor : current;
+    const right = neighbor.y <= current.y ? current : neighbor;
+    return {
+      label: `${denormalizeRailwayName(left.name)} - ${denormalizeRailwayName(right.name)}間`,
+      positionOrder: (left.y + right.y) / 2,
+    };
   }
 
   function inferKeiseiLineCode(record, stationLabel, config, stationCode) {
+    const special = KEISEI_SPECIAL_STOP_META[stringOrEmpty(stationCode)];
+    if (special && special.lineCode) {
+      return special.lineCode;
+    }
+
     const candidates = getKeiseiLineCandidates(stationLabel, config);
     if (candidates.length === 1) {
       return candidates[0];
@@ -1325,13 +1398,21 @@
     const lineCode = forcedLineCode || inferKeiseiLineCode(record, stationLabel, config, stationCode);
     const lineLabel = normalizeDisplayRailwayName((config.rosenByCode[lineCode] || {}).name) || "路線不明";
     const coord = pickKeiseiCoordinate(stationLabel, lineCode, config);
-    const confidence = stationLabel && coord ? "high" : stationLabel ? "medium" : "low";
+    const special = getKeiseiSpecialStopPosition(stationCode, config);
+    const sectionMeta = locationType === "section"
+      ? buildKeiseiSectionMeta(record.positionCode || "", stationLabel, lineCode, config, record.raw && record.raw.hk)
+      : null;
+    const confidence = stationLabel && (coord || special) ? (coord ? "high" : "medium") : stationLabel ? "medium" : "low";
     let locationLabel = stationLabel || record.positionCode || "位置不明";
-    let positionOrder = coord ? coord.y : 999999;
+    let positionOrder = coord ? coord.y : (special ? special.positionOrder : 999999);
 
     if (locationType === "section") {
-      locationLabel = buildKeiseiSectionLabel(stationLabel, lineCode, config) || (stationLabel ? `${stationLabel}付近` : (record.positionCode || "位置不明"));
-      positionOrder = coord ? coord.y + 0.5 : 999999;
+      locationLabel = (special && sectionMeta ? "" : (special ? special.sectionLabel : ""))
+        || (sectionMeta ? sectionMeta.label : "")
+        || (stationLabel ? `${stationLabel}付近` : (record.positionCode || "位置不明"));
+      positionOrder = sectionMeta
+        ? sectionMeta.positionOrder
+        : (coord ? coord.y + 0.5 : (special ? special.positionOrder : 999999));
     }
 
     return { lineCode, lineLabel, locationLabel, locationType, positionOrder, confidence };
@@ -1360,6 +1441,24 @@
     return rows;
   }
 
+  function normalizeMatsudoDiaRows(payload, config) {
+    const rows = [];
+    ensureArray((payload || {}).dy).forEach((row) => {
+      if (!row || typeof row !== "object") {
+        return;
+      }
+      const stationCode = stringOrEmpty(row.st);
+      rows.push({
+        stationCode,
+        stationLabel: lookupKeiseiStationName(stationCode, config, true) || lookupKeiseiStationName(stationCode, config, false),
+        arrivalTime: normalizeKeiseiTime(row.tt),
+        departureTime: normalizeKeiseiTime(row.ht),
+        stopType: stringOrEmpty(row.pa) === "1" ? "--" : "停車",
+      });
+    });
+    return rows;
+  }
+
   async function fetchKeiseiDiaRows(trainNumber, config) {
     return getCachedObject(`keisei:diainf:${trainNumber}:${getOperationalDateCompact()}`, 60, async () => {
       const payload = await fetchJson(`${KEISEI_ENDPOINTS.diainfBase}${trainNumber}.json?ts=${getOperationalDateCompact()}`, {
@@ -1371,6 +1470,17 @@
     });
   }
 
+  async function fetchMatsudoDiaRows(trainNumber, config) {
+    return getCachedObject(`matsudo:diainf:${trainNumber}`, 60, async () => {
+      const payload = await fetchJson(`${KEISEI_ENDPOINTS.matsudoDiaBase}${trainNumber}.json`, {
+        encodings: ["utf-8", "cp932", "shift_jis"],
+        proxy: true,
+        proxyLabel: "京成松戸線列車別時刻表API",
+      });
+      return normalizeMatsudoDiaRows(payload, config);
+    });
+  }
+
   function normalizeKeiseiTrain(record, config) {
     const positionInfo = resolveKeiseiPosition(record, config, "");
     const serviceEntry = config.syasyuByCode[record.raw.sy] || null;
@@ -1378,6 +1488,8 @@
     const serviceTypeLabel = stringOrEmpty(serviceEntry && serviceEntry.name) || "不明";
     const destinationLabel = stringOrEmpty(destinationEntry && destinationEntry.name);
     const directionCode = normalizeKeiseiDirectionCode(record.raw.hk);
+    const carCount = toNumber(record.raw.sr, 0);
+    const platform = stringOrEmpty(record.raw.bs).trim();
     const palette = pickPalette(serviceTypeLabel);
     const trainNumber = record.trainNumber || "(列番なし)";
 
@@ -1400,13 +1512,13 @@
       serviceTextColor: palette.textColor,
       originLabel: "",
       destinationLabel,
-      platform: "",
+      platform: positionInfo.locationType === "station" && platform && platform !== "0" ? platform : "",
       delayMinutes: toNumber(record.raw.dl, 0),
       ownerLabel: "京成",
-      vehicleLabel: "",
+      vehicleLabel: carCount > 0 ? `${carCount}両` : "",
       sourceTags: ["live"],
       researchCandidate: positionInfo.confidence !== "high" || !serviceEntry || !destinationEntry || !positionInfo.lineCode,
-      note: [record.raw.sr ? `sr=${record.raw.sr}` : "", record.raw.bs ? `bs=${record.raw.bs}` : ""].filter(Boolean).join(" / "),
+      note: "",
       detailAvailable: Boolean(trainNumber && trainNumber !== "(列番なし)"),
       detailKey: trainNumber ? `keisei:${trainNumber}` : "",
       detailRequest: trainNumber ? { trainNumber } : null,
@@ -1506,10 +1618,13 @@
     const stationLabel = lookupKeiseiStationName(stationCode, config, true) || lookupKeiseiStationName(stationCode, config, false);
     const coord = pickKeiseiCoordinate(stationLabel, "7", config);
     const positionOrder = coord ? (locationType === "section" ? coord.y + 0.5 : coord.y) : 999999;
+    const sectionMeta = locationType === "section"
+      ? buildKeiseiSectionMeta(mapping.id || "", stationLabel, "7", config, stringOrEmpty(mapping.hk))
+      : null;
     return {
-      locationLabel: locationType === "section" ? (buildKeiseiSectionLabel(stationLabel, "7", config) || "位置不明") : (stationLabel || "位置不明"),
+      locationLabel: locationType === "section" ? ((sectionMeta && sectionMeta.label) || "位置不明") : (stationLabel || "位置不明"),
       locationType,
-      positionOrder,
+      positionOrder: sectionMeta ? sectionMeta.positionOrder : positionOrder,
       confidence: coord ? "high" : stationLabel ? "medium" : "low",
     };
   }
@@ -1524,8 +1639,22 @@
     const directionCode = stringOrEmpty(mapping && mapping.hk);
     const orbitNumber = stringOrEmpty(trainInfoPk.orbitnumber);
     const rawTrainNumber = stringOrEmpty(record.trainno);
-    const trainNumber = orbitNumber || rawTrainNumber || "(列番なし)";
+    const trainNumber = rawTrainNumber || orbitNumber || "(列番なし)";
     const palette = SERVICE_PALETTE.local;
+    const noteParts = [];
+
+    if (trainInfoPk.blockno) {
+      noteParts.push(`block ${trainInfoPk.blockno}`);
+    }
+    if (orbitNumber) {
+      noteParts.push(`運用 ${orbitNumber}`);
+    }
+    if (sectionId) {
+      noteParts.push(`section ${sectionId}${trainInfoPk.sectionidSub ? `-${trainInfoPk.sectionidSub}` : ""}`);
+    }
+    if (trainInfoPk.stationid != null && stringOrEmpty(trainInfoPk.stationid) !== "") {
+      noteParts.push(`station ${trainInfoPk.stationid}`);
+    }
 
     return {
       networkId: "matsudo",
@@ -1552,12 +1681,12 @@
       vehicleLabel: orbitNumber ? `運用 ${orbitNumber}` : "",
       sourceTags: ["live", "enrichment"],
       researchCandidate: positionInfo.confidence !== "high",
-      note: [rawTrainNumber ? `列車番号 ${rawTrainNumber}` : "", trainInfoPk.blockno ? `block ${trainInfoPk.blockno}` : ""].filter(Boolean).join(" / "),
-      detailAvailable: false,
-      detailKey: "",
-      detailRequest: null,
+      note: noteParts.join(" / "),
+      detailAvailable: Boolean(rawTrainNumber),
+      detailKey: rawTrainNumber ? `matsudo:${rawTrainNumber}` : "",
+      detailRequest: rawTrainNumber ? { trainNumber: rawTrainNumber } : null,
       detailRows: [],
-      detailSummary: "",
+      detailSummary: "公式列車別時刻表",
     };
   }
 
@@ -1587,7 +1716,7 @@
         warnings.push("公式の松戸線ステータスが平常以外を示しています。");
       }
       warnings.push("松戸線は matsudo_id.json と座標辞書を使って位置を補完します。");
-      warnings.push("列車番号よりも orbitnumber を優先表示し、運用番号として追いやすくしています。");
+      warnings.push("列車番号 trainno を主表示にし、orbitnumber は運用メモとして併記しています。");
 
       return {
         id: "matsudo",
@@ -1607,6 +1736,18 @@
         loaded: true,
       };
     });
+  }
+
+  async function buildMatsudoTrainDetail(request) {
+    const trainNumber = stringOrEmpty(request && request.trainNumber);
+    const config = await getKeiseiConfigBundle();
+    const detailRows = await fetchMatsudoDiaRows(trainNumber, config);
+    return {
+      detailKey: `matsudo:${trainNumber}`,
+      detailRows,
+      detailSummary: "公式列車別時刻表",
+      sourceTags: ["timetable"],
+    };
   }
 
   async function getAppManifest() {
@@ -1648,6 +1789,9 @@
     }
     if (networkId === "keisei") {
       return buildKeiseiTrainDetail(request);
+    }
+    if (networkId === "matsudo") {
+      return buildMatsudoTrainDetail(request);
     }
     return { detailRows: [], detailSummary: "", sourceTags: [] };
   }
