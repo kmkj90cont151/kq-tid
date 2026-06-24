@@ -192,17 +192,63 @@
   };
 
   const KEISEI_SPECIAL_STOP_META = {
-    "43": {
-      label: "駒井野信号場",
-      lineCode: "1",
-      between: ["京成成田", "空港第2ビル"],
-      sectionLabel: "空港第2ビル - 駒井野信号場間",
+    "43": [
+      {
+        label: "駒井野信号場",
+        lineCode: "1",
+        between: ["京成成田", "空港第2ビル"],
+      },
+      {
+        label: "駒井野信号場",
+        lineCode: "2",
+        between: ["京成成田", "東成田"],
+      },
+    ],
+    "147": [
+      {
+        label: "根古谷信号場",
+        lineCode: "3",
+        between: ["成田湯川", "空港第2ビル"],
+      },
+    ],
+  };
+
+  const KEISEI_POSITION_OVERRIDES = {
+    "S010": {
+      lineCode: "4",
+      between: ["京成立石", "青砥"],
     },
-    "147": {
-      label: "根古谷信号場",
+    "D010": {
+      lineCode: "1",
+      between: ["お花茶屋", "青砥"],
+    },
+    "W011": {
+      lineCode: "1",
+      between: ["青砥", "京成高砂"],
+    },
+    "K011": {
       lineCode: "3",
-      between: ["成田湯川", "空港第2ビル"],
-      sectionLabel: "成田湯川 - 根古谷信号場間",
+      between: ["新柴又", "京成高砂"],
+    },
+    "D043": {
+      lineCode: "1",
+      between: ["京成成田", "駒井野信号場"],
+    },
+    "S044": {
+      lineCode: "3",
+      between: ["根古谷信号場", "空港第2ビル"],
+    },
+    "D046": {
+      lineCode: "2",
+      between: ["駒井野信号場", "東成田"],
+    },
+    "D147": {
+      lineCode: "3",
+      between: ["成田湯川", "根古谷信号場"],
+    },
+    "D252": {
+      lineCode: "1",
+      between: ["青砥", "京成高砂"],
     },
   };
 
@@ -821,12 +867,47 @@
     };
   }
 
+  async function enrichKeikyuTrainLabels(train) {
+    if (!train || !train.detailAvailable || !train.trainNumber || train.trainNumber === "(列番なし)") {
+      return train;
+    }
+
+    try {
+      const timetable = await fetchKeikyuTimetable(train.trainNumber, train.lineId, train.directionCode || "1");
+      const merged = Object.assign({}, train);
+
+      if (timetable.originLabel) {
+        merged.originLabel = timetable.originLabel;
+      }
+      if (timetable.destinationLabel) {
+        merged.destinationLabel = timetable.destinationLabel;
+      }
+      if (!merged.vehicleLabel && timetable.vehicleLabel) {
+        merged.vehicleLabel = timetable.vehicleLabel;
+      }
+      if (Array.isArray(timetable.detailRows) && timetable.detailRows.length > 0) {
+        const positionInfo = resolveKeikyuPosition(train.positionCode || "");
+        const timetablePlatform = pickKeikyuPlatform(positionInfo, timetable.detailRows);
+        if (!merged.platform && timetablePlatform) {
+          merged.platform = timetablePlatform;
+        }
+      }
+
+      merged.sourceTags = uniqueStrings([...(ensureArray(train.sourceTags)), "timetable"]);
+      return merged;
+    } catch (error) {
+      return train;
+    }
+  }
+
   async function buildKeikyuSnapshot() {
     return getCachedObject("network:keikyu", 10, async () => {
       const payload = await fetchJson(KEIKYU_API_ENDPOINT, { encodings: ["utf-8", "cp932", "shift_jis"], keikyuProxy: true });
       if (!Array.isArray(payload)) {
         throw new Error("京急APIの応答形式が想定外です。");
       }
+      const normalizedTrains = payload.map(normalizeKeikyuTrain);
+      const trains = await Promise.all(normalizedTrains.map((train) => enrichKeikyuTrainLabels(train)));
       return {
         id: "keikyu",
         label: NETWORK_META.keikyu.label,
@@ -834,17 +915,18 @@
         accentColor: NETWORK_META.keikyu.accentColor,
         status: "ok",
         updatedAt: firstNonEmpty([payload[0] && payload[0].receive_datetime, isoNow()]),
-        trains: payload.map(normalizeKeikyuTrain).sort(compareGenericTrain),
+        trains: trains.sort(compareGenericTrain),
         warnings: [
           "未解読の位置コードや train_no=0 の列車は raw のまま残します。",
           "京急蒲田、京急川崎、金沢八景、堀ノ内まわりの分岐は API 優先で補完しています。",
+          "始発・行先は一覧表示のため列車別時刻表APIで事前補完します。",
           "GitHub Pages 本番では京急API用のプロキシ設定が必要です。",
         ],
         error: "",
         sourceUrls: NETWORK_META.keikyu.sourceUrls,
         meta: {
           requiresProxy: true,
-          detailMode: "列車カード展開時に後読み",
+          detailMode: "始発・行先は事前補完、列車カード展開時に詳細後読み",
           positionMappingMode: "旧GAS版準拠の推定付き",
         },
         loaded: true,
@@ -1085,6 +1167,48 @@
     return stringOrEmpty(value);
   }
 
+  function getKeiseiSpecialStopDefinitions(code) {
+    const value = KEISEI_SPECIAL_STOP_META[stringOrEmpty(code)];
+    if (!value) {
+      return [];
+    }
+    return Array.isArray(value) ? value : [value];
+  }
+
+  function getKeiseiPositionOverride(positionCode) {
+    return KEISEI_POSITION_OVERRIDES[stringOrEmpty(positionCode).trim()] || null;
+  }
+
+  function buildKeiseiSectionOverrideMeta(override, config) {
+    if (!override || !Array.isArray(override.between) || override.between.length !== 2) {
+      return null;
+    }
+    const lineCode = stringOrEmpty(override.lineCode);
+    const leftName = normalizeRailwayName(override.between[0]);
+    const rightName = normalizeRailwayName(override.between[1]);
+    if (!leftName || !rightName) {
+      return null;
+    }
+    const leftCoord = pickKeiseiCoordinate(leftName, lineCode, config);
+    const rightCoord = pickKeiseiCoordinate(rightName, lineCode, config);
+    if (!leftCoord || !rightCoord) {
+      return {
+        label: `${override.between[0]} - ${override.between[1]}間`,
+        positionOrder: 999999,
+      };
+    }
+    const left = leftCoord.y <= rightCoord.y
+      ? { name: leftName, y: leftCoord.y }
+      : { name: rightName, y: rightCoord.y };
+    const right = leftCoord.y <= rightCoord.y
+      ? { name: rightName, y: rightCoord.y }
+      : { name: leftName, y: leftCoord.y };
+    return {
+      label: `${denormalizeRailwayName(left.name)} - ${denormalizeRailwayName(right.name)}間`,
+      positionOrder: (left.y + right.y) / 2,
+    };
+  }
+
   async function getKeiseiConfigBundle() {
     return getCachedObject("keisei:config", 3600, async () => {
       const loaded = {};
@@ -1161,18 +1285,20 @@
         });
       });
 
-      Object.values(KEISEI_SPECIAL_STOP_META).forEach((special) => {
-        const fromCoord = pickKeiseiCoordinate(special.between[0], special.lineCode, bundle);
-        const toCoord = pickKeiseiCoordinate(special.between[1], special.lineCode, bundle);
-        if (!fromCoord || !toCoord) {
-          return;
-        }
+      Object.keys(KEISEI_SPECIAL_STOP_META).forEach((code) => {
+        getKeiseiSpecialStopDefinitions(code).forEach((special) => {
+          const fromCoord = pickKeiseiCoordinate(special.between[0], special.lineCode, bundle);
+          const toCoord = pickKeiseiCoordinate(special.between[1], special.lineCode, bundle);
+          if (!fromCoord || !toCoord) {
+            return;
+          }
 
-        const y = (fromCoord.y + toCoord.y) / 2;
-        const name = normalizeRailwayName(special.label);
-        bundle.coordinateByName[name] = (bundle.coordinateByName[name] || []).concat([{ rs: special.lineCode, x: 0, y }]);
-        bundle.lineStations[special.lineCode] = bundle.lineStations[special.lineCode] || [];
-        bundle.lineStations[special.lineCode].push({ name, y });
+          const y = (fromCoord.y + toCoord.y) / 2;
+          const name = normalizeRailwayName(special.label);
+          bundle.coordinateByName[name] = (bundle.coordinateByName[name] || []).concat([{ rs: special.lineCode, x: 0, y }]);
+          bundle.lineStations[special.lineCode] = bundle.lineStations[special.lineCode] || [];
+          bundle.lineStations[special.lineCode].push({ name, y });
+        });
       });
 
       Object.values(bundle.lineStations).forEach((stations) => {
@@ -1228,8 +1354,8 @@
     if (!code) {
       return "";
     }
-    const special = KEISEI_SPECIAL_STOP_META[stringOrEmpty(code)];
-    if (special) {
+    const special = getKeiseiSpecialStopDefinitions(code)[0];
+    if (special && special.label) {
       return special.label;
     }
     const stopEntry = config.stopByCode[code];
@@ -1305,8 +1431,12 @@
     return items.find((item) => stringOrEmpty(item.rs) === stringOrEmpty(lineCode)) || items[0];
   }
 
-  function getKeiseiSpecialStopPosition(code, config) {
-    const special = KEISEI_SPECIAL_STOP_META[stringOrEmpty(code)];
+  function getKeiseiSpecialStopPosition(code, config, preferredLineCode = "") {
+    const definitions = getKeiseiSpecialStopDefinitions(code);
+    if (!definitions.length) {
+      return null;
+    }
+    const special = definitions.find((item) => stringOrEmpty(item.lineCode) === stringOrEmpty(preferredLineCode)) || definitions[0];
     if (!special || !Array.isArray(special.between) || special.between.length !== 2) {
       return null;
     }
@@ -1356,9 +1486,14 @@
   }
 
   function inferKeiseiLineCode(record, stationLabel, config, stationCode) {
-    const special = KEISEI_SPECIAL_STOP_META[stringOrEmpty(stationCode)];
-    if (special && special.lineCode) {
-      return special.lineCode;
+    const override = getKeiseiPositionOverride(record.positionCode);
+    if (override && override.lineCode) {
+      return override.lineCode;
+    }
+
+    const specialDefinitions = getKeiseiSpecialStopDefinitions(stationCode);
+    if (specialDefinitions.length === 1 && specialDefinitions[0].lineCode) {
+      return specialDefinitions[0].lineCode;
     }
 
     const candidates = getKeiseiLineCandidates(stationLabel, config);
@@ -1377,6 +1512,13 @@
     }
 
     if (stationLabel === "青砥") {
+      const prefix = stringOrEmpty(record.positionCode).trim().charAt(0);
+      if (prefix === "S") {
+        return "4";
+      }
+      if (prefix === "D") {
+        return "1";
+      }
       return isKeiseiSubwayThrough(record.raw.ik) ? "4" : "1";
     }
 
@@ -1407,6 +1549,23 @@
       return destinationLine === "2" ? "2" : "1";
     }
 
+    if (stationLabel === "空港第2ビル") {
+      const prefix = stringOrEmpty(record.positionCode).trim().charAt(0);
+      if (prefix === "S") {
+        return "3";
+      }
+      if (prefix === "D" && destinationLine !== "3") {
+        return "1";
+      }
+      if (destinationLine === "3") {
+        return "3";
+      }
+      if (["0", "1", "2", "16", "17", "18"].includes(stringOrEmpty(record.raw.sy))) {
+        return "3";
+      }
+      return "1";
+    }
+
     if (candidates.length > 0) {
       return candidates[0];
     }
@@ -1420,13 +1579,17 @@
   }
 
   function resolveKeiseiPosition(record, config, forcedLineCode = "") {
+    const positionOverride = getKeiseiPositionOverride(record.positionCode);
     const stationCode = extractDigits(record.positionCode || "");
     const stationLabel = lookupKeiseiStationName(stationCode, config, forcedLineCode === "7");
     const locationType = record.positionBucket === "TS" ? "station" : "section";
-    const lineCode = forcedLineCode || inferKeiseiLineCode(record, stationLabel, config, stationCode);
+    const lineCode = forcedLineCode || (positionOverride && positionOverride.lineCode) || inferKeiseiLineCode(record, stationLabel, config, stationCode);
     const lineLabel = normalizeDisplayRailwayName((config.rosenByCode[lineCode] || {}).name) || "路線不明";
     const coord = pickKeiseiCoordinate(stationLabel, lineCode, config);
-    const special = getKeiseiSpecialStopPosition(stationCode, config);
+    const special = getKeiseiSpecialStopPosition(stationCode, config, lineCode);
+    const overriddenSectionMeta = locationType === "section"
+      ? buildKeiseiSectionOverrideMeta(positionOverride, config)
+      : null;
     const sectionMeta = locationType === "section"
       ? buildKeiseiSectionMeta(record.positionCode || "", stationLabel, lineCode, config, record.raw && record.raw.hk)
       : null;
@@ -1435,11 +1598,13 @@
     let positionOrder = coord ? coord.y : (special ? special.positionOrder : 999999);
 
     if (locationType === "section") {
-      locationLabel = (special && sectionMeta ? "" : (special ? special.sectionLabel : ""))
+      locationLabel = (overriddenSectionMeta ? overriddenSectionMeta.label : "")
         || (sectionMeta ? sectionMeta.label : "")
         || (stationLabel ? `${stationLabel}付近` : (record.positionCode || "位置不明"));
-      positionOrder = sectionMeta
-        ? sectionMeta.positionOrder
+      positionOrder = overriddenSectionMeta
+        ? overriddenSectionMeta.positionOrder
+        : sectionMeta
+          ? sectionMeta.positionOrder
         : (coord ? coord.y + 0.5 : (special ? special.positionOrder : 999999));
     }
 

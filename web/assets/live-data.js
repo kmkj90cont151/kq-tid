@@ -867,12 +867,47 @@
     };
   }
 
+  async function enrichKeikyuTrainLabels(train) {
+    if (!train || !train.detailAvailable || !train.trainNumber || train.trainNumber === "(列番なし)") {
+      return train;
+    }
+
+    try {
+      const timetable = await fetchKeikyuTimetable(train.trainNumber, train.lineId, train.directionCode || "1");
+      const merged = Object.assign({}, train);
+
+      if (timetable.originLabel) {
+        merged.originLabel = timetable.originLabel;
+      }
+      if (timetable.destinationLabel) {
+        merged.destinationLabel = timetable.destinationLabel;
+      }
+      if (!merged.vehicleLabel && timetable.vehicleLabel) {
+        merged.vehicleLabel = timetable.vehicleLabel;
+      }
+      if (Array.isArray(timetable.detailRows) && timetable.detailRows.length > 0) {
+        const positionInfo = resolveKeikyuPosition(train.positionCode || "");
+        const timetablePlatform = pickKeikyuPlatform(positionInfo, timetable.detailRows);
+        if (!merged.platform && timetablePlatform) {
+          merged.platform = timetablePlatform;
+        }
+      }
+
+      merged.sourceTags = uniqueStrings([...(ensureArray(train.sourceTags)), "timetable"]);
+      return merged;
+    } catch (error) {
+      return train;
+    }
+  }
+
   async function buildKeikyuSnapshot() {
     return getCachedObject("network:keikyu", 10, async () => {
       const payload = await fetchJson(KEIKYU_API_ENDPOINT, { encodings: ["utf-8", "cp932", "shift_jis"], keikyuProxy: true });
       if (!Array.isArray(payload)) {
         throw new Error("京急APIの応答形式が想定外です。");
       }
+      const normalizedTrains = payload.map(normalizeKeikyuTrain);
+      const trains = await Promise.all(normalizedTrains.map((train) => enrichKeikyuTrainLabels(train)));
       return {
         id: "keikyu",
         label: NETWORK_META.keikyu.label,
@@ -880,17 +915,18 @@
         accentColor: NETWORK_META.keikyu.accentColor,
         status: "ok",
         updatedAt: firstNonEmpty([payload[0] && payload[0].receive_datetime, isoNow()]),
-        trains: payload.map(normalizeKeikyuTrain).sort(compareGenericTrain),
+        trains: trains.sort(compareGenericTrain),
         warnings: [
           "未解読の位置コードや train_no=0 の列車は raw のまま残します。",
           "京急蒲田、京急川崎、金沢八景、堀ノ内まわりの分岐は API 優先で補完しています。",
+          "始発・行先は一覧表示のため列車別時刻表APIで事前補完します。",
           "GitHub Pages 本番では京急API用のプロキシ設定が必要です。",
         ],
         error: "",
         sourceUrls: NETWORK_META.keikyu.sourceUrls,
         meta: {
           requiresProxy: true,
-          detailMode: "列車カード展開時に後読み",
+          detailMode: "始発・行先は事前補完、列車カード展開時に詳細後読み",
           positionMappingMode: "旧GAS版準拠の推定付き",
         },
         loaded: true,

@@ -815,6 +815,14 @@ function compareDirectionLabel(left, right) {
 }
 
 function compareDirectionLabelForNetwork(network, left, right) {
+  if (network && network.id === "toei") {
+    const toeiOrder = ["押上方面", "西馬込方面"];
+    const leftIndex = toeiOrder.indexOf(left);
+    const rightIndex = toeiOrder.indexOf(right);
+    if (leftIndex >= 0 || rightIndex >= 0) {
+      return (leftIndex >= 0 ? leftIndex : 999) - (rightIndex >= 0 ? rightIndex : 999);
+    }
+  }
   if (network && network.id === "keisei") {
     const keiseiOrder = ["上り", "下り"];
     const leftIndex = keiseiOrder.indexOf(left);

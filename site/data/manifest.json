@@ -1,30 +1,30 @@
 {
   "appName": "私鉄在線情報ビューア",
   "appVersion": "github-pages-multi-1",
-  "buildTimestamp": "2026-04-15T01:19:57.314656+00:00",
+  "buildTimestamp": "2026-06-24T22:03:02.132829+00:00",
   "publishTarget": "github-pages",
   "refreshPolicy": "GitHub Actions で定期ビルド",
   "networks": [
     {
       "id": "keikyu",
       "label": "京急線",
-      "description": "京急の在線情報と列車別時刻表を静的に配信します。",
+      "description": "京急の在線位置と列車別時刻表をまとめて確認できる GitHub Pages 向けの静的サイトです。",
       "accentColor": "#d72731",
-      "updatedAt": "",
-      "trainCount": 0,
+      "updatedAt": "2026-06-25 07:02:52",
+      "trainCount": 74,
       "detailCount": 0,
       "dataUrl": "data/networks/keikyu.json",
       "sourceUrls": [
         {
-          "label": "京急API",
+          "label": "京急在線 API",
           "url": "https://app-kq.net/api/train"
         },
         {
-          "label": "京急在線ページ",
+          "label": "京急公式在線",
           "url": "https://app-kq.net/web/jp/html/zaisen.html"
         },
         {
-          "label": "京急列車別時刻表",
+          "label": "京急列車別時刻表 API 例",
           "url": "https://app-kq.net/api/locationTimetable/8201-1-1403A"
         }
       ]
@@ -107,11 +107,11 @@
     }
   ],
   "summary": {
-    "totalTrains": 73,
-    "delayedTrains": 9,
-    "researchTrains": 56,
-    "healthyNetworks": 3,
-    "loadedNetworks": 3,
+    "totalTrains": 147,
+    "delayedTrains": 13,
+    "researchTrains": 87,
+    "healthyNetworks": 4,
+    "loadedNetworks": 4,
     "totalNetworks": 4
   },
   "notes": [

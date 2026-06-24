@@ -583,11 +583,142 @@
       align-items: stretch;
     }
 
+    .hero__lead {
+      font-size: 0.93rem;
+      line-height: 1.65;
+    }
+
+    .hero__meta {
+      gap: 8px;
+      font-size: 0.82rem;
+    }
+
+    .primary-button {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .field {
+      min-width: 0;
+      flex-basis: 100%;
+    }
+
+    .toggle {
+      width: 100%;
+      padding: 11px 12px;
+      justify-content: flex-start;
+    }
+
+    .tab-bar {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      margin-inline: -2px;
+      padding: 2px 2px 6px;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .status-grid {
+      grid-template-columns: 1fr;
+    }
+
     .status-card--wide {
       grid-column: span 1;
     }
 
     .line-panel__columns {
       flex-direction: column;
+    }
+
+    .direction-panel {
+      min-width: 0;
+      padding: 12px;
+    }
+
+    .position-group,
+    .train-card {
+      padding: 12px;
+    }
+
+    .train-list,
+    .position-groups {
+      gap: 10px;
+    }
+
+    .train-card__identity {
+      gap: 8px;
+    }
+
+    .train-card__direction,
+    .direction-panel__count,
+    .position-group__raw {
+      font-size: 0.8rem;
+    }
+
+    .train-card__meta {
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 4px 7px;
+      font-size: 0.72rem;
+    }
+
+    .source-links a {
+      width: 100%;
+      text-align: center;
+    }
+
+    .timetable-row {
+      grid-template-columns: minmax(0, 1fr) 52px 52px 40px;
+      gap: 8px;
+      padding: 8px;
+      font-size: 0.82rem;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .hero,
+    .panel,
+    .line-panel,
+    .direction-panel,
+    .position-group,
+    .train-card {
+      border-radius: 16px;
+    }
+
+    .hero h1 {
+      font-size: 1.55rem;
+      line-height: 1.12;
+    }
+
+    .line-panel__header h2,
+    .direction-panel__heading h3 {
+      font-size: 1rem;
+    }
+
+    .status-card,
+    .panel,
+    .line-panel {
+      padding: 14px;
+    }
+
+    .train-no {
+      font-size: 0.96rem;
+    }
+
+    .service-badge {
+      font-size: 0.72rem;
+      padding: 4px 9px;
+    }
+
+    .timetable-row {
+      grid-template-columns: minmax(0, 1fr) 46px 46px 34px;
+      font-size: 0.78rem;
     }
   }
