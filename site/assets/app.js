@@ -845,6 +845,9 @@ function compareDirectionLabelForNetwork(network, left, right) {
 function comparePositionGroupForNetwork(network, directionLabel, left, right) {
   const leftOrder = Number(left.positionOrder || 0);
   const rightOrder = Number(right.positionOrder || 0);
+  if (network && network.id === "toei") {
+    return rightOrder - leftOrder;
+  }
   return leftOrder - rightOrder;
 }
 
