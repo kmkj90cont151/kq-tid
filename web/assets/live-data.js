@@ -1,7 +1,8 @@
 (function initLiveTrainData() {
-  const LIVE_APP_VERSION = "github-pages-live-3";
+  const LIVE_APP_VERSION = "github-pages-live-4";
   const LIVE_CONFIG = window.APP_CONFIG || {};
   const NETWORK_IDS = ["keikyu", "toei", "keisei", "matsudo"];
+  const KEIKYU_TIMETABLE_CACHE_SECONDS = Math.max(300, Number(LIVE_CONFIG.keikyuTimetableCacheSeconds) || 3600);
 
   const KEIKYU_API_ENDPOINT = "https://app-kq.net/api/train";
   const KEIKYU_LOCATION_TIMETABLE_ENDPOINT = "https://app-kq.net/api/locationTimetable/";
@@ -364,6 +365,18 @@
 
   function isoNow() {
     return new Date().toISOString();
+  }
+
+  function getJstServiceDay(now = new Date()) {
+    const shifted = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    if (shifted.getUTCHours() < 3) {
+      shifted.setUTCDate(shifted.getUTCDate() - 1);
+    }
+    return [
+      shifted.getUTCFullYear(),
+      String(shifted.getUTCMonth() + 1).padStart(2, "0"),
+      String(shifted.getUTCDate()).padStart(2, "0"),
+    ].join("-");
   }
 
   function normalizeEncoding(encoding) {
@@ -796,7 +809,8 @@
   }
 
   async function fetchKeikyuTimetable(trainNumber, lineId, directionCode) {
-    return getCachedObject(`keikyu:timetable:${trainNumber}:${lineId}:${directionCode}`, 60, async () => {
+    const serviceDay = getJstServiceDay();
+    return getCachedObject(`keikyu:timetable:${serviceDay}:${trainNumber}:${lineId}:${directionCode}`, KEIKYU_TIMETABLE_CACHE_SECONDS, async () => {
       let lastError = null;
       for (const url of buildKeikyuCandidateUrls(trainNumber, lineId, directionCode)) {
         try {
@@ -860,44 +874,11 @@
       researchCandidate: positionInfo.confidence !== "high" || trainNumber === "0",
       note: [positionCode ? `位置コード ${positionCode}` : "", stringOrEmpty(record.is_alert) === "1" ? "公式アラートあり" : ""].filter(Boolean).join(" / "),
       detailAvailable,
-      detailKey: detailAvailable ? `keikyu:${trainNumber}:${directionCode || "x"}` : "",
+      detailKey: detailAvailable ? `keikyu:${getJstServiceDay()}:${trainNumber}:${directionCode || "x"}` : "",
       detailRequest: detailAvailable ? { trainNumber, lineId: positionInfo.lineId, positionCode, directionCode: directionCode || "1" } : null,
       detailRows: [],
       detailSummary: "京急列車別時刻表",
     };
-  }
-
-  async function enrichKeikyuTrainLabels(train) {
-    if (!train || !train.detailAvailable || !train.trainNumber || train.trainNumber === "(列番なし)") {
-      return train;
-    }
-
-    try {
-      const timetable = await fetchKeikyuTimetable(train.trainNumber, train.lineId, train.directionCode || "1");
-      const merged = Object.assign({}, train);
-
-      if (timetable.originLabel) {
-        merged.originLabel = timetable.originLabel;
-      }
-      if (timetable.destinationLabel) {
-        merged.destinationLabel = timetable.destinationLabel;
-      }
-      if (!merged.vehicleLabel && timetable.vehicleLabel) {
-        merged.vehicleLabel = timetable.vehicleLabel;
-      }
-      if (Array.isArray(timetable.detailRows) && timetable.detailRows.length > 0) {
-        const positionInfo = resolveKeikyuPosition(train.positionCode || "");
-        const timetablePlatform = pickKeikyuPlatform(positionInfo, timetable.detailRows);
-        if (!merged.platform && timetablePlatform) {
-          merged.platform = timetablePlatform;
-        }
-      }
-
-      merged.sourceTags = uniqueStrings([...(ensureArray(train.sourceTags)), "timetable"]);
-      return merged;
-    } catch (error) {
-      return train;
-    }
   }
 
   async function buildKeikyuSnapshot() {
@@ -906,8 +887,7 @@
       if (!Array.isArray(payload)) {
         throw new Error("京急APIの応答形式が想定外です。");
       }
-      const normalizedTrains = payload.map(normalizeKeikyuTrain);
-      const trains = await Promise.all(normalizedTrains.map((train) => enrichKeikyuTrainLabels(train)));
+      const trains = payload.map(normalizeKeikyuTrain);
       return {
         id: "keikyu",
         label: NETWORK_META.keikyu.label,
@@ -942,7 +922,7 @@
     const positionInfo = positionCode ? resolveKeikyuPosition(positionCode) : { stationLabel: "" };
     const timetable = await fetchKeikyuTimetable(trainNumber, lineId, directionCode);
     return {
-      detailKey: `keikyu:${trainNumber}:${directionCode || "x"}`,
+      detailKey: `keikyu:${getJstServiceDay()}:${trainNumber}:${directionCode || "x"}`,
       detailRows: ensureArray(timetable.detailRows),
       detailSummary: timetable.detailSummary || "京急列車別時刻表",
       originLabel: timetable.originLabel || "",
@@ -1953,7 +1933,8 @@
       networks: NETWORK_IDS.map((networkId) => buildNetworkShell(networkId)),
       summary: buildManifestSummary(NETWORK_IDS.length),
       notes: [
-        "タブを開いた路線だけを取得し、列車別時刻表は列車カードを開いたときだけ後読みします。",
+        "タブを開いた路線だけを取得し、京急の列車別時刻表は在線一覧の表示後に少数並列で補完します。",
+        "京急の時刻表キャッシュはアクセス時に作成し、午前3時は営業日キーの切替だけを行います。",
         "京急・京成系APIは GitHub Pages 本番から直接読めないため、apiProxyTemplate の設定と Worker の再デプロイが必要です。",
         "えるサイト連携は停止し、リンクのみを残しています。",
       ],

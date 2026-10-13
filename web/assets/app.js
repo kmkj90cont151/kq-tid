@@ -1,4 +1,7 @@
 const REFRESH_INTERVAL_MS = Number(window.APP_CONFIG?.refreshIntervalMs) || 15000;
+const KEIKYU_TIMETABLE_CONCURRENCY = Math.max(1, Math.min(5, Number(window.APP_CONFIG?.keikyuTimetableConcurrency) || 3));
+const DETAIL_RETRY_DELAY_MS = 5 * 60 * 1000;
+let scheduledRenderTimer = null;
 
 const SOURCE_TAG_LABELS = {
   live: "",
@@ -15,6 +18,8 @@ const appState = {
   openDetailKeys: {},
   loadingNetworks: {},
   loadingDetails: {},
+  backgroundDetailWarming: {},
+  detailRetryAfter: {},
   error: "",
   activeNetworkId: "keikyu",
   filters: {
@@ -122,10 +127,13 @@ async function requestNetworkSnapshot(networkId) {
   } finally {
     delete appState.loadingNetworks[networkId];
     render();
+    if (networkId === "keikyu" && appState.networksById[networkId]?.status === "ok") {
+      void warmKeikyuTrainDetails(networkId);
+    }
   }
 }
 
-async function requestTrainDetail(networkId, detailKey) {
+async function requestTrainDetail(networkId, detailKey, options = {}) {
   if (!networkId || !detailKey || appState.loadingDetails[detailKey]) {
     return;
   }
@@ -136,12 +144,15 @@ async function requestTrainDetail(networkId, detailKey) {
   }
 
   appState.loadingDetails[detailKey] = true;
-  renderListings();
+  if (!options.background) {
+    renderListings();
+  }
 
   try {
     const detail = await window.LiveTrainData.getTrainDetail(networkId, request);
     const normalized = Object.assign({}, detail, { detailLoaded: true, error: "" });
     appState.detailCache[detailKey] = normalized;
+    delete appState.detailRetryAfter[detailKey];
     mergeDetailIntoNetworks(detailKey, normalized);
   } catch (error) {
     const normalized = {
@@ -151,11 +162,72 @@ async function requestTrainDetail(networkId, detailKey) {
       error: error?.message || String(error),
     };
     appState.detailCache[detailKey] = normalized;
+    appState.detailRetryAfter[detailKey] = Date.now() + DETAIL_RETRY_DELAY_MS;
     mergeDetailIntoNetworks(detailKey, normalized);
   } finally {
     delete appState.loadingDetails[detailKey];
-    render();
+    if (options.background) {
+      scheduleRender();
+    } else {
+      render();
+    }
   }
+}
+
+async function warmKeikyuTrainDetails(networkId) {
+  if (appState.backgroundDetailWarming[networkId]) {
+    return;
+  }
+
+  const network = appState.networksById[networkId];
+  if (!network || !Array.isArray(network.trains)) {
+    return;
+  }
+
+  const now = Date.now();
+  const detailKeys = Array.from(new Set(network.trains
+    .filter((train) => train.detailAvailable && train.detailKey && appState.detailRequests[train.detailKey])
+    .map((train) => train.detailKey)))
+    .filter((detailKey) => {
+      const cached = appState.detailCache[detailKey];
+      if (!cached) {
+        return true;
+      }
+      return Boolean(cached.error) && Number(appState.detailRetryAfter[detailKey] || 0) <= now;
+    });
+
+  if (detailKeys.length === 0) {
+    return;
+  }
+
+  appState.backgroundDetailWarming[networkId] = true;
+  let cursor = 0;
+
+  const worker = async () => {
+    while (cursor < detailKeys.length) {
+      const detailKey = detailKeys[cursor];
+      cursor += 1;
+      await requestTrainDetail(networkId, detailKey, { background: true });
+    }
+  };
+
+  try {
+    const workerCount = Math.min(KEIKYU_TIMETABLE_CONCURRENCY, detailKeys.length);
+    await Promise.all(Array.from({ length: workerCount }, () => worker()));
+  } finally {
+    delete appState.backgroundDetailWarming[networkId];
+    scheduleRender();
+  }
+}
+
+function scheduleRender() {
+  if (scheduledRenderTimer !== null) {
+    return;
+  }
+  scheduledRenderTimer = window.setTimeout(() => {
+    scheduledRenderTimer = null;
+    render();
+  }, 100);
 }
 
 function hydrateNetworkSnapshot(network) {
@@ -453,6 +525,12 @@ function renderPositionGroup(sample, trains) {
 function renderTrainCard(train) {
   const displayDirectionLabel = getDisplayDirectionLabel(train);
   const directionCode = getTrainDirectionCode(train);
+  const originDestinationLabel = [train.originLabel, train.destinationLabel].filter(Boolean).join(" → ");
+  const secondaryLabel = originDestinationLabel || (
+    train.networkId === "keikyu" && train.detailAvailable
+      ? "時刻表情報を順次取得中"
+      : "始発・行先情報なし"
+  );
   const livePlatform = normalizePlatformValue(train.platform);
   const sourceChips = Array.isArray(train.sourceTags)
     ? train.sourceTags.map((tag) => labelSourceTag(tag)).filter(Boolean).map((label) => chip(label, "source")).join("")
@@ -533,7 +611,7 @@ function renderTrainCard(train) {
         <div class="train-card__direction">${escapeHtml(displayDirectionLabel)}</div>
       </div>
       <div class="train-card__location">${escapeHtml(train.locationLabel || "")}</div>
-      <div class="train-card__secondary">${escapeHtml([train.originLabel, train.destinationLabel].filter(Boolean).join(" → ") || "始発・行先情報なし")}</div>
+      <div class="train-card__secondary">${escapeHtml(secondaryLabel)}</div>
       <div class="train-card__meta">${chips}</div>
       ${train.note ? `<div class="train-card__note">${escapeHtml(train.note)}</div>` : ""}
       ${detailBlock}

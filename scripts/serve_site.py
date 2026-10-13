@@ -33,7 +33,7 @@ class LocalSiteHandler(SimpleHTTPRequestHandler):
             self.send_json({"error": "forbidden"}, status=403)
             return
 
-        request = Request(target_url, headers={"User-Agent": "keikyu-mytid-local/1.0"})
+        request = Request(target_url, headers={"Accept": "application/json,text/plain,*/*"})
         try:
             with urlopen(request, timeout=25) as response:
                 body = response.read()
@@ -69,13 +69,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="site/ をローカル配信し、京急API用の簡易プロキシも提供します。")
     parser.add_argument("--port", type=int, default=8000, help="待受ポート")
     parser.add_argument("--skip-build", action="store_true", help="既存の site/ をそのまま配信します。")
+    parser.add_argument(
+        "--include-keikyu-details",
+        action="store_true",
+        help="検証用に京急時刻表をビルド時に事前生成します（通常は不要）。",
+    )
     parser.add_argument("--fixtures-dir", default="", help="ローカル fixture のディレクトリ")
     args = parser.parse_args()
 
     site_dir = ROOT / "site"
     if not args.skip_build:
         fixtures_dir = Path(args.fixtures_dir).resolve() if args.fixtures_dir else None
-        build_site(site_dir, fixtures_dir)
+        build_site(site_dir, fixtures_dir, skip_keikyu_details=not args.include_keikyu_details)
 
     handler = functools.partial(LocalSiteHandler, directory=str(site_dir))
     server = ThreadingHTTPServer(("127.0.0.1", args.port), handler)

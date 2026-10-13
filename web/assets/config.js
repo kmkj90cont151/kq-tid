@@ -2,6 +2,8 @@
   const isLocal = ["127.0.0.1", "localhost"].includes(window.location.hostname);
   const defaults = {
     refreshIntervalMs: 15000,
+    keikyuTimetableConcurrency: 3,
+    keikyuTimetableCacheSeconds: 3600,
     odptConsumerKey: "qkpjriztbhvaxwjzum1oluug1hnfvwfq3ztxnsb56xtbt6qve7zdwv8bb73ajavy",
     apiProxyTemplate: isLocal
       ? "/proxy?url={url}"
